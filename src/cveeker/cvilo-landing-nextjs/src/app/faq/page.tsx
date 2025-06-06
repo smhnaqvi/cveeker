@@ -167,7 +167,7 @@ export default function FAQ() {
         <div className="mt-12">
           <Card className="border-0 shadow-lg">
             <CardHeader>
-              <CardTitle className="text-center">Can't find what you're looking for?</CardTitle>
+              <CardTitle className="text-center">Can&apos;t find what you&apos;re looking for?</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex gap-4 max-w-md mx-auto">
@@ -181,7 +181,7 @@ export default function FAQ() {
                 </Button>
               </div>
               <p className="text-sm text-gray-500 text-center mt-4">
-                Try searching for keywords like "export", "templates", "pricing", or "security"
+                Try searching for keywords like &quot;export&quot;, &quot;templates&quot;, &quot;pricing&quot;, or &quot;security&quot;
               </p>
             </CardContent>
           </Card>

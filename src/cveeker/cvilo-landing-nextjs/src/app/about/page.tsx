@@ -43,7 +43,7 @@ export default function AboutUs() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600">
-                  Whether you're switching careers or climbing the corporate ladder, create resumes that highlight your unique experience and skills.
+                  Whether you&apos;re switching careers or climbing the corporate ladder, create resumes that highlight your unique experience and skills.
                 </p>
               </CardContent>
             </Card>
@@ -91,7 +91,7 @@ export default function AboutUs() {
             <CardContent>
               <div className="text-center mb-8">
                 <p className="text-lg text-gray-700 leading-relaxed">
-                  Whether you're applying for your first job, switching careers, or freelancing across industries, CVilo helps you build multiple resumes, save templates, and showcase your strengths—fast and effectively.
+                  Whether you&apos;re applying for your first job, switching careers, or freelancing across industries, CVilo helps you build multiple resumes, save templates, and showcase your strengths—fast and effectively.
                 </p>
               </div>
               

@@ -257,7 +257,7 @@ export default function Pricing() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                  We offer a 30-day money-back guarantee. If you're not satisfied with CVilo, contact us for a full refund.
+                  We offer a 30-day money-back guarantee. If you&apos;re not satisfied with CVilo, contact us for a full refund.
                 </p>
               </CardContent>
             </Card>

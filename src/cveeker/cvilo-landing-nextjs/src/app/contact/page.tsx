@@ -13,7 +13,7 @@ export default function ContactUs() {
             Contact Us
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Have questions or need support? We're here to help! Get in touch with our team and we'll get back to you within 24 hours.
+            Have questions or need support? We&apos;re here to help! Get in touch with our team and we&apos;ll get back to you within 24 hours.
           </p>
         </div>
 
@@ -24,7 +24,7 @@ export default function ContactUs() {
               <CardHeader>
                 <CardTitle className="text-2xl">Get in Touch</CardTitle>
                 <CardDescription>
-                  We're here to help you succeed with your resume building journey
+                  We&apos;re here to help you succeed with your resume building journey
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -82,7 +82,7 @@ export default function ContactUs() {
                 </div>
                 <div className="mt-4 p-3 bg-blue-100 rounded-lg">
                   <p className="text-sm text-blue-800">
-                    💡 For urgent issues, please email us and we'll respond as soon as possible.
+                    💡 For urgent issues, please email us and we&apos;ll respond as soon as possible.
                   </p>
                 </div>
               </CardContent>
@@ -94,7 +94,7 @@ export default function ContactUs() {
             <CardHeader>
               <CardTitle className="text-2xl">Send us a Message</CardTitle>
               <CardDescription>
-                Fill out the form below and we'll get back to you within 24 hours
+                Fill out the form below and we&apos;ll get back to you within 24 hours
               </CardDescription>
             </CardHeader>
             <CardContent>
