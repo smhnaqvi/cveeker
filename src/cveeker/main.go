@@ -6,25 +6,18 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/glebarez/sqlite"
-	"github.com/smhnaqvi/cveeker/handlers"
+	"github.com/smhnaqvi/cveeker/controllers"
 	"github.com/smhnaqvi/cveeker/models"
 	"github.com/smhnaqvi/cveeker/utils"
-	"gorm.io/gorm"
 )
 
 func main() {
-	// Initialize database
-	db, err := gorm.Open(sqlite.Open("cveeker.db"), &gorm.Config{})
+	// Initialize database connection
+	db, err := models.InitDatabase("cveeker.db")
 	if err != nil {
-		log.Fatal("Failed to connect to database:", err)
+		log.Fatal("Failed to initialize database:", err)
 	}
-
-	// Auto-migrate the schemas
-	err = db.AutoMigrate(&models.User{}, &models.Resume{})
-	if err != nil {
-		log.Fatal("Failed to migrate database:", err)
-	}
+	defer models.CloseDatabase(db)
 
 	// Check for seed flag
 	if len(os.Args) > 1 && os.Args[1] == "--seed" {
@@ -35,9 +28,9 @@ func main() {
 		return
 	}
 
-	// Initialize handlers
-	userHandler := handlers.NewUserHandler(db)
-	resumeHandler := handlers.NewResumeHandler(db)
+	// Initialize controllers with database connection
+	userController := controllers.NewUserController(db)
+	resumeController := controllers.NewResumeController(db)
 
 	// Initialize router
 	router := gin.Default()
@@ -59,8 +52,9 @@ func main() {
 	// Health check endpoint
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
-			"message": "CVeeker API is running!",
-			"version": "1.0.0",
+			"message":  "CVeeker API is running!",
+			"version":  "2.0.0",
+			"database": "Connected",
 		})
 	})
 
@@ -70,33 +64,34 @@ func main() {
 		// User routes
 		users := v1.Group("/users")
 		{
-			users.POST("", userHandler.CreateUser)                    // Create user
-			users.GET("", userHandler.GetUsers)                       // Get all users (with pagination)
-			users.GET("/search", userHandler.GetUserByEmail)          // Get user by email
-			users.GET("/:id", userHandler.GetUser)                    // Get user by ID
-			users.PUT("/:id", userHandler.UpdateUser)                 // Update user
-			users.DELETE("/:id", userHandler.DeleteUser)              // Delete user
-			users.GET("/:id/resumes", resumeHandler.GetResumesByUser) // Get all resumes for a user
+			users.POST("", userController.CreateUser)                        // Create user
+			users.GET("", userController.GetUsers)                           // Get all users (with pagination)
+			users.GET("/search", userController.GetUserByEmail)              // Get user by email
+			users.GET("/:id", userController.GetUser)                        // Get user by ID
+			users.PUT("/:id", userController.UpdateUser)                     // Update user
+			users.DELETE("/:id", userController.DeleteUser)                  // Delete user
+			users.PUT("/:id/toggle-status", userController.ToggleUserStatus) // Toggle user status
+			users.GET("/:id/resumes", resumeController.GetResumesByUser)     // Get all resumes for a user
 		}
 
 		// Resume routes
 		resumes := v1.Group("/resumes")
 		{
-			resumes.POST("", resumeHandler.CreateResume)                        // Create resume
-			resumes.GET("", resumeHandler.GetAllResumes)                        // Get all resumes (with pagination)
-			resumes.GET("/:id", resumeHandler.GetResume)                        // Get resume by ID
-			resumes.PUT("/:id", resumeHandler.UpdateResume)                     // Update resume
-			resumes.DELETE("/:id", resumeHandler.DeleteResume)                  // Delete resume
-			resumes.POST("/:id/clone", resumeHandler.CloneResume)               // Clone resume
-			resumes.PUT("/:id/toggle-status", resumeHandler.ToggleResumeStatus) // Toggle active status
+			resumes.POST("", resumeController.CreateResume)                        // Create resume
+			resumes.GET("", resumeController.GetAllResumes)                        // Get all resumes (with pagination)
+			resumes.GET("/:id", resumeController.GetResume)                        // Get resume by ID
+			resumes.PUT("/:id", resumeController.UpdateResume)                     // Update resume
+			resumes.DELETE("/:id", resumeController.DeleteResume)                  // Delete resume
+			resumes.POST("/:id/clone", resumeController.CloneResume)               // Clone resume
+			resumes.PUT("/:id/toggle-status", resumeController.ToggleResumeStatus) // Toggle active status
 		}
 
 		// Helper routes for parsing complex JSON fields
 		helpers := v1.Group("/helpers")
 		{
-			helpers.POST("/parse-experience", resumeHandler.ParseExperience) // Parse experience JSON
-			helpers.POST("/parse-education", resumeHandler.ParseEducation)   // Parse education JSON
-			helpers.POST("/parse-skills", resumeHandler.ParseSkills)         // Parse skills JSON
+			helpers.POST("/parse-experience", resumeController.ParseExperience) // Parse experience JSON
+			helpers.POST("/parse-education", resumeController.ParseEducation)   // Parse education JSON
+			helpers.POST("/parse-skills", resumeController.ParseSkills)         // Parse skills JSON
 		}
 
 		// Sample data endpoint
@@ -112,17 +107,25 @@ func main() {
 	router.GET("/api/docs", func(c *gin.Context) {
 		docs := gin.H{
 			"title":       "CVeeker REST API Documentation",
-			"version":     "1.0.0",
-			"description": "A REST API for managing users and their resumes/CVs",
+			"version":     "2.0.0",
+			"description": "A REST API for managing users and their resumes/CVs with direct GORM database access",
 			"base_url":    "http://localhost:8081/api/v1",
+			"features": gin.H{
+				"direct_db_access": "Uses *gorm.DB directly for cleaner, more conventional code",
+				"controllers":      "Organized with controller-based architecture",
+				"validation":       "Enhanced input validation and error handling",
+				"relationships":    "Proper user-resume relationships with cascading operations",
+			},
 			"endpoints": gin.H{
 				"users": gin.H{
-					"POST /users":              "Create a new user",
-					"GET /users":               "Get all users (with pagination)",
-					"GET /users/:id":           "Get user by ID",
-					"PUT /users/:id":           "Update user",
-					"DELETE /users/:id":        "Delete user",
-					"GET /users/search?email=": "Get user by email",
+					"POST /users":                  "Create a new user",
+					"GET /users":                   "Get all users (with pagination)",
+					"GET /users/:id":               "Get user by ID (includes resumes)",
+					"PUT /users/:id":               "Update user (partial updates supported)",
+					"DELETE /users/:id":            "Delete user (cascades to resumes)",
+					"GET /users/search?email=":     "Get user by email",
+					"PUT /users/:id/toggle-status": "Toggle user active status",
+					"GET /users/:id/resumes":       "Get all resumes for a user",
 				},
 				"resumes": gin.H{
 					"POST /resumes":                  "Create a new resume",
@@ -132,7 +135,6 @@ func main() {
 					"DELETE /resumes/:id":            "Delete resume",
 					"POST /resumes/:id/clone":        "Clone resume",
 					"PUT /resumes/:id/toggle-status": "Toggle resume active status",
-					"GET /users/:id/resumes":         "Get all resumes for a user",
 				},
 				"helpers": gin.H{
 					"POST /helpers/parse-experience": "Parse experience data to JSON",
@@ -145,10 +147,23 @@ func main() {
 				"create_user": gin.H{
 					"url": "POST /api/v1/users",
 					"body": gin.H{
-						"name":    "John Doe",
-						"email":   "john@example.com",
-						"phone":   "+1234567890",
-						"summary": "Software Developer with 5 years of experience",
+						"name":     "John Doe",
+						"email":    "john@example.com",
+						"phone":    "+1234567890",
+						"summary":  "Software Developer with 5 years of experience",
+						"location": "San Francisco, CA",
+						"website":  "https://johndoe.dev",
+						"linkedin": "https://linkedin.com/in/johndoe",
+						"github":   "https://github.com/johndoe",
+					},
+				},
+				"update_user": gin.H{
+					"url": "PUT /api/v1/users/1",
+					"body": gin.H{
+						"summary":   "Updated summary",
+						"skills":    "Go, JavaScript, React, Docker",
+						"location":  "New York, NY",
+						"is_active": true,
 					},
 				},
 				"create_resume": gin.H{
@@ -167,6 +182,7 @@ func main() {
 			"setup": gin.H{
 				"seed_database": "Run `go run main.go --seed` to populate database with sample data",
 				"start_server":  "Run `go run main.go` to start the API server",
+				"architecture":  "Uses direct *gorm.DB access for cleaner, more conventional code",
 			},
 		}
 		c.JSON(http.StatusOK, docs)
@@ -176,6 +192,7 @@ func main() {
 	log.Println("API Documentation available at: http://localhost:8081/api/docs")
 	log.Println("Health check available at: http://localhost:8081/ping")
 	log.Println("To seed database with sample data, run: go run main.go --seed")
+	log.Println("Architecture: Direct *gorm.DB access for cleaner, more conventional code")
 
 	// Start server
 	if err := router.Run(":8081"); err != nil {
