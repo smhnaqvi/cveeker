@@ -165,3 +165,11 @@ func (u *UserModel) DeactivateUser(id uint) error {
 	db.Preload("Resumes").First(&u, u.ID)
 	return nil
 }
+
+func (u *UserModel) GetUserByChatID(chatID int64) error {
+	db := database.GetSqliteDB()
+	if err := db.Where("chat_id = ?", chatID).First(&u).Error; err == nil {
+		return nil
+	}
+	return errors.New("user not found")
+}

@@ -10,8 +10,8 @@ import (
 
 type ResumeModel struct {
 	gorm.Model
-	UserID uint `json:"user_id" gorm:"not null"`
-	User   User `json:"user" gorm:"foreignKey:UserID"`
+	UserID uint      `json:"user_id" gorm:"not null"`
+	User   UserModel `json:"user" gorm:"foreignKey:UserID"`
 
 	// Resume metadata
 	Title    string `json:"title" gorm:"not null"`

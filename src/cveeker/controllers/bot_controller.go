@@ -26,8 +26,11 @@ func StartBot(db *gorm.DB) {
 			continue
 		}
 
-		var user models.User
-		db.FirstOrCreate(&user, models.User{ChatID: &update.Message.Chat.ID})
+		var user models.UserModel
+		if err := user.GetUserByChatID(update.Message.Chat.ID); err != nil {
+			user.ChatID = &update.Message.Chat.ID
+			user.Create()
+		}
 
 		text := update.Message.Text
 

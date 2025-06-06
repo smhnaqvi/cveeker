@@ -9,6 +9,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/smhnaqvi/cveeker/controllers"
 	"github.com/smhnaqvi/cveeker/database"
+	"github.com/smhnaqvi/cveeker/migration"
 	"github.com/smhnaqvi/cveeker/utils"
 )
 
@@ -23,6 +24,11 @@ func main() {
 		log.Fatal("Failed to initialize database:", err)
 	}
 	defer database.CloseDatabases()
+
+	// Auto-migrate the schemas
+	if err := migration.AutoMigrate(); err != nil {
+		log.Fatal("Failed to migrate database:", err)
+	}
 
 	// Check for seed flag
 	if len(os.Args) > 1 && os.Args[1] == "--seed" {
