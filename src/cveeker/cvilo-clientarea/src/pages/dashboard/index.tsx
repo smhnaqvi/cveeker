@@ -1,4 +1,3 @@
-import React from 'react'
 import {
   Box,
   Typography,
@@ -18,8 +17,7 @@ import {
   TrendingUp as TrendingUpIcon,
 } from '@mui/icons-material'
 
-export default function Dashboard() {
-  const stats = [
+const stats = [
     {
       title: 'Total Resumes',
       value: '3',
@@ -48,9 +46,9 @@ export default function Dashboard() {
       color: '#ed6c02',
       change: '+5% improvement',
     },
-  ]
+]
 
-  const recentResumes = [
+const recentResumes = [
     {
       id: 1,
       title: 'Software Engineer Resume',
@@ -74,6 +72,7 @@ export default function Dashboard() {
     },
   ]
 
+export default function Dashboard() {
   return (
     <Box>
       {/* Welcome Section */}
