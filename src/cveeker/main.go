@@ -7,30 +7,29 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/smhnaqvi/cveeker/controllers"
-	"github.com/smhnaqvi/cveeker/models"
+	"github.com/smhnaqvi/cveeker/database"
 	"github.com/smhnaqvi/cveeker/utils"
 )
 
 func main() {
 	// Initialize database connection
-	db, err := models.InitDatabase("cveeker.db")
-	if err != nil {
+	if err := database.InitializeDatabases(); err != nil {
 		log.Fatal("Failed to initialize database:", err)
 	}
-	defer models.CloseDatabase(db)
+	defer database.CloseDatabases()
 
 	// Check for seed flag
 	if len(os.Args) > 1 && os.Args[1] == "--seed" {
-		if err := utils.SeedDatabase(db); err != nil {
+		if err := utils.SeedDatabase(database.GetSqliteDB()); err != nil {
 			log.Fatal("Failed to seed database:", err)
 		}
 		log.Println("Database seeding completed. Exiting...")
 		return
 	}
 
-	// Initialize controllers with database connection
-	userController := controllers.NewUserController(db)
-	resumeController := controllers.NewResumeController(db)
+	// Initialize controllers (no database parameters needed)
+	userController := controllers.NewUserController()
+	resumeController := controllers.NewResumeController()
 
 	// Initialize router
 	router := gin.Default()
@@ -108,10 +107,10 @@ func main() {
 		docs := gin.H{
 			"title":       "CVeeker REST API Documentation",
 			"version":     "2.0.0",
-			"description": "A REST API for managing users and their resumes/CVs with direct GORM database access",
+			"description": "A REST API for managing users and their resumes/CVs with global database connection",
 			"base_url":    "http://localhost:8081/api/v1",
 			"features": gin.H{
-				"direct_db_access": "Uses *gorm.DB directly for cleaner, more conventional code",
+				"global_db_access": "Uses global database.GetSqliteDB() for clean, centralized database access",
 				"controllers":      "Organized with controller-based architecture",
 				"validation":       "Enhanced input validation and error handling",
 				"relationships":    "Proper user-resume relationships with cascading operations",
@@ -182,7 +181,7 @@ func main() {
 			"setup": gin.H{
 				"seed_database": "Run `go run main.go --seed` to populate database with sample data",
 				"start_server":  "Run `go run main.go` to start the API server",
-				"architecture":  "Uses direct *gorm.DB access for cleaner, more conventional code",
+				"architecture":  "Uses global database connection for clean, centralized access",
 			},
 		}
 		c.JSON(http.StatusOK, docs)
@@ -192,7 +191,7 @@ func main() {
 	log.Println("API Documentation available at: http://localhost:8081/api/docs")
 	log.Println("Health check available at: http://localhost:8081/ping")
 	log.Println("To seed database with sample data, run: go run main.go --seed")
-	log.Println("Architecture: Direct *gorm.DB access for cleaner, more conventional code")
+	log.Println("Architecture: Global database connection for clean, centralized access")
 
 	// Start server
 	if err := router.Run(":8081"); err != nil {

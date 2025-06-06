@@ -5,20 +5,21 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/smhnaqvi/cveeker/database"
 	"github.com/smhnaqvi/cveeker/models"
 	"gorm.io/gorm"
 )
 
-type UserController struct {
-	db *gorm.DB
-}
+type UserController struct{}
 
-func NewUserController(db *gorm.DB) *UserController {
-	return &UserController{db: db}
+func NewUserController() *UserController {
+	return &UserController{}
 }
 
 // CreateUser creates a new user
 func (uc *UserController) CreateUser(c *gin.Context) {
+	db := database.GetSqliteDB()
+
 	var req models.UserCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -33,7 +34,7 @@ func (uc *UserController) CreateUser(c *gin.Context) {
 
 	// Check if user with email already exists
 	var existingUser models.User
-	if err := uc.db.Where("email = ?", req.Email).First(&existingUser).Error; err == nil {
+	if err := db.Where("email = ?", req.Email).First(&existingUser).Error; err == nil {
 		c.JSON(http.StatusConflict, gin.H{"error": "User with this email already exists"})
 		return
 	}
@@ -50,7 +51,7 @@ func (uc *UserController) CreateUser(c *gin.Context) {
 		GitHub:   req.GitHub,
 	}
 
-	if err := uc.db.Create(&user).Error; err != nil {
+	if err := db.Create(&user).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
 		return
 	}
@@ -80,6 +81,7 @@ func (uc *UserController) CreateUser(c *gin.Context) {
 
 // GetUser retrieves a user by ID
 func (uc *UserController) GetUser(c *gin.Context) {
+	db := database.GetSqliteDB()
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
@@ -87,7 +89,7 @@ func (uc *UserController) GetUser(c *gin.Context) {
 	}
 
 	var user models.User
-	if err := uc.db.Preload("Resumes").First(&user, id).Error; err != nil {
+	if err := db.Preload("Resumes").First(&user, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 			return
@@ -101,6 +103,7 @@ func (uc *UserController) GetUser(c *gin.Context) {
 
 // GetUsers retrieves all users with pagination
 func (uc *UserController) GetUsers(c *gin.Context) {
+	db := database.GetSqliteDB()
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 	offset := (page - 1) * limit
@@ -108,9 +111,9 @@ func (uc *UserController) GetUsers(c *gin.Context) {
 	var users []models.User
 	var total int64
 
-	uc.db.Model(&models.User{}).Count(&total)
+	db.Model(&models.User{}).Count(&total)
 
-	if err := uc.db.Limit(limit).Offset(offset).Find(&users).Error; err != nil {
+	if err := db.Limit(limit).Offset(offset).Find(&users).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve users"})
 		return
 	}
@@ -128,6 +131,7 @@ func (uc *UserController) GetUsers(c *gin.Context) {
 
 // UpdateUser updates an existing user
 func (uc *UserController) UpdateUser(c *gin.Context) {
+	db := database.GetSqliteDB()
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
@@ -135,7 +139,7 @@ func (uc *UserController) UpdateUser(c *gin.Context) {
 	}
 
 	var user models.User
-	if err := uc.db.First(&user, id).Error; err != nil {
+	if err := db.First(&user, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 			return
@@ -193,13 +197,13 @@ func (uc *UserController) UpdateUser(c *gin.Context) {
 		updates["is_active"] = *req.IsActive
 	}
 
-	if err := uc.db.Model(&user).Updates(updates).Error; err != nil {
+	if err := db.Model(&user).Updates(updates).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
 		return
 	}
 
 	// Fetch updated user
-	uc.db.First(&user, id)
+	db.First(&user, id)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User updated successfully",
@@ -209,6 +213,7 @@ func (uc *UserController) UpdateUser(c *gin.Context) {
 
 // DeleteUser deletes a user by ID
 func (uc *UserController) DeleteUser(c *gin.Context) {
+	db := database.GetSqliteDB()
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
@@ -216,7 +221,7 @@ func (uc *UserController) DeleteUser(c *gin.Context) {
 	}
 
 	var user models.User
-	if err := uc.db.First(&user, id).Error; err != nil {
+	if err := db.First(&user, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 			return
@@ -226,12 +231,12 @@ func (uc *UserController) DeleteUser(c *gin.Context) {
 	}
 
 	// Delete associated resumes first
-	if err := uc.db.Where("user_id = ?", id).Delete(&models.Resume{}).Error; err != nil {
+	if err := db.Where("user_id = ?", id).Delete(&models.Resume{}).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user's resumes"})
 		return
 	}
 
-	if err := uc.db.Delete(&user).Error; err != nil {
+	if err := db.Delete(&user).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
 		return
 	}
@@ -241,6 +246,7 @@ func (uc *UserController) DeleteUser(c *gin.Context) {
 
 // GetUserByEmail retrieves a user by email
 func (uc *UserController) GetUserByEmail(c *gin.Context) {
+	db := database.GetSqliteDB()
 	email := c.Query("email")
 	if email == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Email parameter is required"})
@@ -248,7 +254,7 @@ func (uc *UserController) GetUserByEmail(c *gin.Context) {
 	}
 
 	var user models.User
-	if err := uc.db.Where("email = ?", email).First(&user).Error; err != nil {
+	if err := db.Where("email = ?", email).First(&user).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 			return
@@ -262,6 +268,7 @@ func (uc *UserController) GetUserByEmail(c *gin.Context) {
 
 // ToggleUserStatus toggles the active status of a user
 func (uc *UserController) ToggleUserStatus(c *gin.Context) {
+	db := database.GetSqliteDB()
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
@@ -269,7 +276,7 @@ func (uc *UserController) ToggleUserStatus(c *gin.Context) {
 	}
 
 	var user models.User
-	if err := uc.db.First(&user, id).Error; err != nil {
+	if err := db.First(&user, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 			return
@@ -279,7 +286,7 @@ func (uc *UserController) ToggleUserStatus(c *gin.Context) {
 	}
 
 	user.IsActive = !user.IsActive
-	if err := uc.db.Save(&user).Error; err != nil {
+	if err := db.Save(&user).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user status"})
 		return
 	}
