@@ -51,6 +51,13 @@ export default function Layout({ children }: LayoutProps) {
     setAnchorEl(null)
   }
 
+  const handleLogout = () => {
+    // Simple logout - just navigate to login
+    // In a real app, you would clear session/tokens here
+    navigate('/auth/login')
+    handleProfileMenuClose()
+  }
+
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
     { text: 'My Resumes', icon: <DescriptionIcon />, path: '/resumes' },
@@ -182,7 +189,7 @@ export default function Layout({ children }: LayoutProps) {
           </ListItemIcon>
           Profile
         </MenuItem>
-        <MenuItem>
+        <MenuItem onClick={handleLogout}>
           <ListItemIcon>
             <ExitToApp fontSize="small" />
           </ListItemIcon>
