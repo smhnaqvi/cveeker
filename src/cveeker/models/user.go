@@ -1,12 +1,14 @@
 package models
 
 import (
+	"errors"
 	"time"
 
+	"github.com/smhnaqvi/cveeker/database"
 	"gorm.io/gorm"
 )
 
-type User struct {
+type UserModel struct {
 	ID        uint           `json:"id" gorm:"primarykey"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
@@ -36,16 +38,16 @@ type User struct {
 	IsActive bool   `json:"is_active" gorm:"default:true"`
 
 	// Relationships
-	Resumes []Resume `json:"resumes,omitempty" gorm:"foreignKey:UserID"`
+	Resumes []ResumeModel `json:"resumes,omitempty" gorm:"foreignKey:UserID"`
 }
 
 // TableName overrides the table name used by User to `users`
-func (User) TableName() string {
+func (UserModel) TableName() string {
 	return "users"
 }
 
 // BeforeCreate will set default values before creating
-func (u *User) BeforeCreate(tx *gorm.DB) error {
+func (u *UserModel) BeforeCreate(tx *gorm.DB) error {
 	if u.Step == "" {
 		u.Step = "profile"
 	}
@@ -100,4 +102,66 @@ type UserResponse struct {
 	GitHub     string    `json:"github"`
 	Step       string    `json:"step"`
 	IsActive   bool      `json:"is_active"`
+}
+
+func (u *UserModel) Create() error {
+	db := database.GetSqliteDB()
+	if err := db.Create(&u).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *UserModel) GetUserByEmail(email string) error {
+	db := database.GetSqliteDB()
+	if err := db.Where("email = ?", email).First(&u).Error; err == nil {
+		return nil
+	}
+	return errors.New("user not found")
+}
+
+func (u *UserModel) GetUserByID(id uint) error {
+	db := database.GetSqliteDB()
+	if err := db.First(&u, id).Error; err == nil {
+		return nil
+	}
+	return errors.New("user not found")
+}
+
+func (u *UserModel) GetAllUsers(offset int, limit int) ([]UserModel, int64, error) {
+	db := database.GetSqliteDB()
+	var users []UserModel
+	var total int64
+	db.Model(&UserModel{}).Count(&total)
+	if err := db.Limit(limit).Offset(offset).Find(&users).Error; err == nil {
+		return users, total, nil
+	}
+	return nil, 0, errors.New("users not found")
+}
+
+func (u *UserModel) UpdateUser(id uint) error {
+	db := database.GetSqliteDB()
+	if err := db.Model(&u).Where("id = ?", id).Updates(u).Error; err != nil {
+		return err
+	}
+
+	db.Preload("Resumes").First(&u, u.ID)
+	return nil
+}
+
+func (u *UserModel) DeleteUserResumes(id uint) error {
+	db := database.GetSqliteDB()
+	if err := db.Where("user_id = ?", id).Delete(&ResumeModel{}).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *UserModel) DeactivateUser(id uint) error {
+	db := database.GetSqliteDB()
+	if err := db.Model(&u).Where("id = ?", id).Update("is_active", false).Error; err != nil {
+		return err
+	}
+	db.Preload("Resumes").First(&u, u.ID)
+	return nil
 }

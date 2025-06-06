@@ -6,9 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/smhnaqvi/cveeker/database"
 	"github.com/smhnaqvi/cveeker/models"
-	"gorm.io/gorm"
 )
 
 type ResumeController struct{}
@@ -19,9 +17,8 @@ func NewResumeController() *ResumeController {
 
 // CreateResume creates a new resume for a user
 func (rc *ResumeController) CreateResume(c *gin.Context) {
-	db := database.GetSqliteDB()
 
-	var resume models.Resume
+	var resume models.ResumeModel
 	if err := c.ShouldBindJSON(&resume); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -34,23 +31,16 @@ func (rc *ResumeController) CreateResume(c *gin.Context) {
 	}
 
 	// Check if user exists
-	var user models.User
-	if err := db.First(&user, resume.UserID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
-			return
-		}
+	var user models.UserModel
+	if err := user.GetUserByID(resume.UserID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to verify user"})
 		return
 	}
 
-	if err := db.Create(&resume).Error; err != nil {
+	if err := resume.Create(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create resume"})
 		return
 	}
-
-	// Load the user relationship
-	db.Preload("User").First(&resume, resume.ID)
 
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "Resume created successfully",
@@ -60,19 +50,15 @@ func (rc *ResumeController) CreateResume(c *gin.Context) {
 
 // GetResume retrieves a resume by ID
 func (rc *ResumeController) GetResume(c *gin.Context) {
-	db := database.GetSqliteDB()
+
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid resume ID"})
 		return
 	}
 
-	var resume models.Resume
-	if err := db.Preload("User").First(&resume, id).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Resume not found"})
-			return
-		}
+	var resume models.ResumeModel
+	if err := resume.GetResumeByID(uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve resume"})
 		return
 	}
@@ -82,7 +68,7 @@ func (rc *ResumeController) GetResume(c *gin.Context) {
 
 // GetResumesByUser retrieves all resumes for a specific user
 func (rc *ResumeController) GetResumesByUser(c *gin.Context) {
-	db := database.GetSqliteDB()
+
 	userID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
@@ -90,18 +76,15 @@ func (rc *ResumeController) GetResumesByUser(c *gin.Context) {
 	}
 
 	// Check if user exists
-	var user models.User
-	if err := db.First(&user, userID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
-			return
-		}
+	var user models.UserModel
+	if err := user.GetUserByID(uint(userID)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to verify user"})
 		return
 	}
 
-	var resumes []models.Resume
-	if err := db.Where("user_id = ?", userID).Preload("User").Find(&resumes).Error; err != nil {
+	var resumeModel models.ResumeModel
+	resumes, err := resumeModel.GetResumesByUserID(uint(userID))
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve resumes"})
 		return
 	}
@@ -115,16 +98,14 @@ func (rc *ResumeController) GetResumesByUser(c *gin.Context) {
 
 // GetAllResumes retrieves all resumes with pagination
 func (rc *ResumeController) GetAllResumes(c *gin.Context) {
-	db := database.GetSqliteDB()
+
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 	offset := (page - 1) * limit
 
-	var resumes []models.Resume
-	var total int64
-
-	db.Model(&models.Resume{}).Count(&total)
-	if err := db.Limit(limit).Offset(offset).Preload("User").Find(&resumes).Error; err != nil {
+	var resumeModel models.ResumeModel
+	resumes, total, err := resumeModel.GetAllResumes(offset, limit)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve resumes"})
 		return
 	}
@@ -142,24 +123,20 @@ func (rc *ResumeController) GetAllResumes(c *gin.Context) {
 
 // UpdateResume updates an existing resume
 func (rc *ResumeController) UpdateResume(c *gin.Context) {
-	db := database.GetSqliteDB()
+
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid resume ID"})
 		return
 	}
 
-	var resume models.Resume
-	if err := db.First(&resume, id).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Resume not found"})
-			return
-		}
+	var resume models.ResumeModel
+	if err := resume.GetResumeByID(uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve resume"})
 		return
 	}
 
-	var updateData models.Resume
+	var updateData models.ResumeModel
 	if err := c.ShouldBindJSON(&updateData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -168,13 +145,10 @@ func (rc *ResumeController) UpdateResume(c *gin.Context) {
 	// Don't allow changing the user ID
 	updateData.UserID = resume.UserID
 
-	if err := db.Model(&resume).Updates(updateData).Error; err != nil {
+	if err := resume.UpdateResume(uint(id), updateData); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update resume"})
 		return
 	}
-
-	// Load the user relationship
-	db.Preload("User").First(&resume, resume.ID)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Resume updated successfully",
@@ -184,24 +158,20 @@ func (rc *ResumeController) UpdateResume(c *gin.Context) {
 
 // DeleteResume deletes a resume by ID
 func (rc *ResumeController) DeleteResume(c *gin.Context) {
-	db := database.GetSqliteDB()
+
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid resume ID"})
 		return
 	}
 
-	var resume models.Resume
-	if err := db.First(&resume, id).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Resume not found"})
-			return
-		}
+	var resume models.ResumeModel
+	if err := resume.GetResumeByID(uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve resume"})
 		return
 	}
 
-	if err := db.Delete(&resume).Error; err != nil {
+	if err := resume.DeleteResume(uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete resume"})
 		return
 	}
@@ -211,29 +181,32 @@ func (rc *ResumeController) DeleteResume(c *gin.Context) {
 
 // ToggleResumeStatus toggles the active status of a resume
 func (rc *ResumeController) ToggleResumeStatus(c *gin.Context) {
-	db := database.GetSqliteDB()
+
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid resume ID"})
 		return
 	}
 
-	var resume models.Resume
-	if err := db.First(&resume, id).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Resume not found"})
-			return
-		}
+	// initialize the resume
+	var resume models.ResumeModel
+
+	// Get the resume
+	if err := resume.GetResumeByID(uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve resume"})
 		return
 	}
 
+	// Toggle the active status
 	resume.IsActive = !resume.IsActive
-	if err := db.Save(&resume).Error; err != nil {
+
+	// Update the resume
+	if err := resume.UpdateResume(uint(id), resume); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update resume status"})
 		return
 	}
 
+	// Return the updated resume
 	c.JSON(http.StatusOK, gin.H{
 		"message":   "Resume status updated successfully",
 		"is_active": resume.IsActive,
@@ -242,19 +215,15 @@ func (rc *ResumeController) ToggleResumeStatus(c *gin.Context) {
 
 // CloneResume creates a copy of an existing resume
 func (rc *ResumeController) CloneResume(c *gin.Context) {
-	db := database.GetSqliteDB()
+
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid resume ID"})
 		return
 	}
 
-	var originalResume models.Resume
-	if err := db.First(&originalResume, id).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Resume not found"})
-			return
-		}
+	var originalResume models.ResumeModel
+	if err := originalResume.GetResumeByID(uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve resume"})
 		return
 	}
@@ -265,13 +234,10 @@ func (rc *ResumeController) CloneResume(c *gin.Context) {
 	clonedResume.Title = originalResume.Title + " (Copy)"
 	clonedResume.IsActive = false // Set clone as inactive by default
 
-	if err := db.Create(&clonedResume).Error; err != nil {
+	if err := clonedResume.Create(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to clone resume"})
 		return
 	}
-
-	// Load the user relationship
-	db.Preload("User").First(&clonedResume, clonedResume.ID)
 
 	c.JSON(http.StatusCreated, gin.H{
 		"message":       "Resume cloned successfully",

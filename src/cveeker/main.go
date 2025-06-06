@@ -6,12 +6,18 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"github.com/smhnaqvi/cveeker/controllers"
 	"github.com/smhnaqvi/cveeker/database"
 	"github.com/smhnaqvi/cveeker/utils"
 )
 
 func main() {
+	// Load environment variables from .env file
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, using system environment variables")
+	}
+
 	// Initialize database connection
 	if err := database.InitializeDatabases(); err != nil {
 		log.Fatal("Failed to initialize database:", err)
