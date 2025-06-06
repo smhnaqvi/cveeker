@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import Dashboard from "../pages/dashboard";
 import Login from "../pages/auth/login";
+import ProtectionProvider from "../provider/ProtectionProvider";
 
 const router = createBrowserRouter([
     {
@@ -22,16 +23,13 @@ const router = createBrowserRouter([
     },
     {
         path: "/dashboard",
-        element: <Dashboard />,
-    },
-    // Additional routes for future development
-    {
-        path: "/resumes",
-        element: <Navigate to="/dashboard" replace />, // Temporary redirect
-    },
-    {
-        path: "/settings", 
-        element: <Navigate to="/dashboard" replace />, // Temporary redirect
+        element: <ProtectionProvider />,
+        children:[
+            {
+                index: true,
+                element: <Dashboard />,
+            },
+        ]
     },
     // Catch-all route for unmatched paths
     {
