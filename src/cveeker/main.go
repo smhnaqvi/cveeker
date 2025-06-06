@@ -7,10 +7,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/smhnaqvi/cveeker/controllers"
-	"github.com/smhnaqvi/cveeker/database"
-	"github.com/smhnaqvi/cveeker/migration"
-	"github.com/smhnaqvi/cveeker/utils"
+	"github.com/smhnaqvi/cvilo/controllers"
+	"github.com/smhnaqvi/cvilo/database"
+	"github.com/smhnaqvi/cvilo/migration"
+	"github.com/smhnaqvi/cvilo/utils"
 )
 
 func main() {
@@ -63,7 +63,7 @@ func main() {
 	// Health check endpoint
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
-			"message":  "CVeeker API is running!",
+			"message":  "Cvilo API is running!",
 			"version":  "2.0.0",
 			"database": "Connected",
 		})
@@ -117,7 +117,7 @@ func main() {
 	// API documentation endpoint
 	router.GET("/api/docs", func(c *gin.Context) {
 		docs := gin.H{
-			"title":       "CVeeker REST API Documentation",
+			"title":       "Cvilo REST API Documentation",
 			"version":     "2.0.0",
 			"description": "A REST API for managing users and their resumes/CVs with global database connection",
 			"base_url":    "http://localhost:8081/api/v1",
@@ -199,7 +199,7 @@ func main() {
 		c.JSON(http.StatusOK, docs)
 	})
 
-	log.Println("CVeeker API server starting on :8081")
+	log.Println("Cvilo API server starting on :8081")
 	log.Println("API Documentation available at: http://localhost:8081/api/docs")
 	log.Println("Health check available at: http://localhost:8081/ping")
 	log.Println("To seed database with sample data, run: go run main.go --seed")

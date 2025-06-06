@@ -1,4 +1,4 @@
-# CVeeker REST API
+# Cvilo REST API
 
 A comprehensive REST API built with Go and Gin for managing users and their CV/resume data. Users can create multiple resumes with different titles, skills, and content to target different job applications.
 
@@ -32,7 +32,7 @@ A comprehensive REST API built with Go and Gin for managing users and their CV/r
 1. Clone the repository:
 ```bash
 git clone <repository-url>
-cd cveeker
+cd Cvilo
 ```
 
 2. Install dependencies:
@@ -244,7 +244,7 @@ The API supports complex nested data structures stored as JSON strings:
 
 ### Project Structure
 ```
-cveeker/
+Cvilo/
 ├── main.go              # Application entry point
 ├── models/              # Data models
 │   ├── user.go         # User model
@@ -260,9 +260,9 @@ cveeker/
 
 ### Database
 
-The application uses SQLite with GORM for simplicity. The database file (`cveeker.db`) is created automatically when you run the application.
+The application uses SQLite with GORM for simplicity. The database file (`cvilo.db`) is created automatically when you run the application.
 
-To reset the database, simply delete the `cveeker.db` file and restart the application.
+To reset the database, simply delete the `cvilo.db` file and restart the application.
 
 ### Adding Sample Data
 

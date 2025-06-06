@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/smhnaqvi/cveeker/models"
+	"github.com/smhnaqvi/cvilo/models"
 )
 
 type UserController struct{}

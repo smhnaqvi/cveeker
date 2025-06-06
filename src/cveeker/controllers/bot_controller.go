@@ -5,7 +5,7 @@ import (
 	"os"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"github.com/smhnaqvi/cveeker/models"
+	"github.com/smhnaqvi/cvilo/models"
 	"gorm.io/gorm"
 )
 

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/smhnaqvi/cveeker/database"
+	"github.com/smhnaqvi/cvilo/database"
 	"gorm.io/gorm"
 )
 

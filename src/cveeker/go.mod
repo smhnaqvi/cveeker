@@ -1,4 +1,4 @@
-module github.com/smhnaqvi/cveeker
+module github.com/smhnaqvi/cvilo
 
 go 1.21.5
 

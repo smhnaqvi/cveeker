@@ -1,4 +1,7 @@
 .env.development
-cveeker.db
-cveeker
+cvilo.db
+cvilo
 main
+*.log
+.env
+.DS_Store

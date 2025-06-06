@@ -3,8 +3,8 @@ package migration
 import (
 	"log"
 
-	"github.com/smhnaqvi/cveeker/database"
-	"github.com/smhnaqvi/cveeker/models"
+	"github.com/smhnaqvi/cvilo/database"
+	"github.com/smhnaqvi/cvilo/models"
 )
 
 // Auto-migrate the schemas

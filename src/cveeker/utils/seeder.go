@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/smhnaqvi/cveeker/models"
+	"github.com/smhnaqvi/cvilo/models"
 	"gorm.io/gorm"
 )
 
