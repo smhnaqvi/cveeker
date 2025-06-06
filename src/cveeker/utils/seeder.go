@@ -14,7 +14,7 @@ func SeedDatabase(db *gorm.DB) error {
 	log.Println("Seeding database with sample data...")
 
 	// Sample users
-	users := []models.User{
+	users := []models.UserModel{
 		{
 			Name:       "John Doe",
 			Email:      "john.doe@example.com",
@@ -67,7 +67,7 @@ func SeedDatabase(db *gorm.DB) error {
 
 	// Create users
 	for _, user := range users {
-		var existingUser models.User
+		var existingUser models.UserModel
 		if err := db.Where("email = ?", user.Email).First(&existingUser).Error; err == gorm.ErrRecordNotFound {
 			if err := db.Create(&user).Error; err != nil {
 				return err
@@ -130,13 +130,13 @@ func SeedDatabase(db *gorm.DB) error {
 	})
 
 	// Get the first user for sample resumes
-	var firstUser models.User
+	var firstUser models.UserModel
 	if err := db.First(&firstUser).Error; err != nil {
 		return err
 	}
 
 	// Sample resumes
-	resumes := []models.Resume{
+	resumes := []models.ResumeModel{
 		{
 			UserID:     firstUser.ID,
 			Title:      "Software Developer - Tech Companies",
@@ -181,7 +181,7 @@ func SeedDatabase(db *gorm.DB) error {
 
 	// Create resumes
 	for _, resume := range resumes {
-		var existingResume models.Resume
+		var existingResume models.ResumeModel
 		if err := db.Where("user_id = ? AND title = ?", resume.UserID, resume.Title).First(&existingResume).Error; err == gorm.ErrRecordNotFound {
 			if err := db.Create(&resume).Error; err != nil {
 				return err
@@ -197,7 +197,7 @@ func SeedDatabase(db *gorm.DB) error {
 // GetSampleData returns sample data structures for reference
 func GetSampleData() map[string]interface{} {
 	return map[string]interface{}{
-		"user": models.User{
+		"user": models.UserModel{
 			Name:       "John Doe",
 			Email:      "john@example.com",
 			Phone:      "+1234567890",
