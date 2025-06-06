@@ -26,6 +26,7 @@ import {
   Person,
 } from '@mui/icons-material'
 import { useNavigate, useLocation } from 'react-router-dom'
+import Logo from './Logo'
 
 const drawerWidth = 280
 
@@ -67,26 +68,7 @@ export default function Layout({ children }: LayoutProps) {
   const drawer = (
     <div>
       <Toolbar>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Box
-            sx={{
-              width: 32,
-              height: 32,
-              borderRadius: 1,
-              background: 'linear-gradient(135deg, #1976d2 0%, #9c27b0 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Typography variant="subtitle2" sx={{ color: 'white', fontWeight: 'bold' }}>
-              CV
-            </Typography>
-          </Box>
-          <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 'bold' }}>
-            CVilo
-          </Typography>
-        </Box>
+        <Logo />
       </Toolbar>
       <Divider />
       <List>

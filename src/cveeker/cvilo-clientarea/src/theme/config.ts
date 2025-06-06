@@ -3,14 +3,17 @@ import { createTheme } from "@mui/material/styles"
 export const theme = createTheme({
   palette: {
     primary: {
-      main: '#1976d2', // Blue
+      main: '#000', // black
     },
     secondary: {
-      main: '#9c27b0', // Purple
+      main: '#1976d2', // blue
     },
     background: {
       default: '#f5f5f5',
     },
+  },
+  shape: {
+    borderRadius: 12,
   },
   typography: {
     fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
@@ -26,7 +29,6 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           textTransform: 'none',
-          borderRadius: 8,
         },
       },
     },

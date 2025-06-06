@@ -1,13 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Box, Button, Divider, Stack, TextField, Typography } from "@mui/material";
+import { Box, Divider, Stack } from "@mui/material";
 import { useForm } from "react-hook-form";
 import FormProvider from "../../provider/FormProvider";
 import { GitHub, Google } from "@mui/icons-material";
+import Logo from "../../components/Logo";
+import Input from "../../components/Input";
+import Button from "../../components/Button";
 
 const Login = () => {
   const methods = useForm();
 
-  const { register, handleSubmit } = methods;
+  const { handleSubmit } = methods;
 
   const onSubmit = (data: any) => {
     console.log("Email login", data);
@@ -26,25 +29,14 @@ const Login = () => {
 
   return (
     <Box maxWidth={400} mx="auto" mt={8}>
-      <Typography variant="h4" gutterBottom>
-        Login to CVilo
-      </Typography>
-
+      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
+        <Logo />
+      </Box>
       <FormProvider methods={methods}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={2}>
-            <TextField
-              label="Email"
-              type="email"
-              {...register("email")}
-              fullWidth
-            />
-            <TextField
-              label="Password"
-              type="password"
-              {...register("password")}
-              fullWidth
-            />
+            <Input name="email" label="Email" type="email" />
+            <Input name="password" label="Password" type="password" />
             <Button type="submit" variant="contained" fullWidth>
               Login with Email
             </Button>
