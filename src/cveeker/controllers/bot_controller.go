@@ -1,4 +1,4 @@
-package handlers
+package controllers
 
 import (
 	"log"
@@ -27,7 +27,7 @@ func StartBot(db *gorm.DB) {
 		}
 
 		var user models.User
-		db.FirstOrCreate(&user, models.User{ChatID: update.Message.Chat.ID})
+		db.FirstOrCreate(&user, models.User{ChatID: &update.Message.Chat.ID})
 
 		text := update.Message.Text
 
@@ -35,42 +35,42 @@ func StartBot(db *gorm.DB) {
 		case "", "name":
 			user.Name = text
 			user.Step = "email"
-			bot.Send(tgbotapi.NewMessage(user.ChatID, "What's your email?"))
+			bot.Send(tgbotapi.NewMessage(*user.ChatID, "What's your email?"))
 
 		case "email":
 			user.Email = text
 			user.Step = "phone"
-			bot.Send(tgbotapi.NewMessage(user.ChatID, "Your phone number?"))
+			bot.Send(tgbotapi.NewMessage(*user.ChatID, "Your phone number?"))
 
 		case "phone":
 			user.Phone = text
 			user.Step = "summary"
-			bot.Send(tgbotapi.NewMessage(user.ChatID, "Write a short summary."))
+			bot.Send(tgbotapi.NewMessage(*user.ChatID, "Write a short summary."))
 
 		case "summary":
 			user.Summary = text
 			user.Step = "education"
-			bot.Send(tgbotapi.NewMessage(user.ChatID, "Education details?"))
+			bot.Send(tgbotapi.NewMessage(*user.ChatID, "Education details?"))
 
 		case "education":
 			user.Education = text
 			user.Step = "experience"
-			bot.Send(tgbotapi.NewMessage(user.ChatID, "Experience?"))
+			bot.Send(tgbotapi.NewMessage(*user.ChatID, "Experience?"))
 
 		case "experience":
 			user.Experience = text
 			user.Step = "skills"
-			bot.Send(tgbotapi.NewMessage(user.ChatID, "Skills?"))
+			bot.Send(tgbotapi.NewMessage(*user.ChatID, "Skills?"))
 
 		case "skills":
 			user.Skills = text
 			user.Step = "languages"
-			bot.Send(tgbotapi.NewMessage(user.ChatID, "Languages spoken?"))
+			bot.Send(tgbotapi.NewMessage(*user.ChatID, "Languages spoken?"))
 
 		case "languages":
 			user.Languages = text
 			user.Step = "done"
-			bot.Send(tgbotapi.NewMessage(user.ChatID, "Generating your CV..."))
+			bot.Send(tgbotapi.NewMessage(*user.ChatID, "Generating your CV..."))
 			// TODO: Generate and send CV
 		}
 
