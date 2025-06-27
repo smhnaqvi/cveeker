@@ -9,7 +9,7 @@ import { Add, Delete, ExpandMore } from "@mui/icons-material";
 import { useRef } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import ResumePreview from "../../../components/ResumePreview";
+import ResumePreview from "../../../components/resumePreview";
 
 // Reusable nested schemas
 const workExperienceSchema = yup.object({
@@ -180,6 +180,8 @@ const CreateResume = () => {
   });
   const watchAll = methods.watch();
   const previewRef = useRef<HTMLDivElement>(null);
+  
+
   const handleDownload = async () => {
     if (!previewRef.current) return;
     const canvas = await html2canvas(previewRef.current);
@@ -191,7 +193,6 @@ const CreateResume = () => {
     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
     pdf.save(`${watchAll.fullName}_Resume.pdf`);
   };
-
 
   // Dynamic fields
   const expArray = useFieldArray({ control: methods.control, name: "experience" });
@@ -542,9 +543,20 @@ const CreateResume = () => {
           </Button>
         </Grid>
         <Grid size={6}>
-          <div ref={previewRef}>
-            <ResumePreview data={watchAll} theme={watchAll.theme} />
-          </div>
+          <Box
+            ref={previewRef}
+            sx={{
+              position: 'sticky',
+              top: '24px',
+              maxHeight: '80vh',
+              overflowY: 'auto',
+            }}
+          >
+            <ResumePreview
+              data={watchAll}
+              theme={watchAll.theme}
+            />
+          </Box>
         </Grid>
       </Grid>
     </Box>
