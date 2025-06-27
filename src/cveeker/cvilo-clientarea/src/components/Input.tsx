@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { styled, TextField } from "@mui/material"
+import {  Stack, styled, TextField, Typography } from "@mui/material"
+import { Controller, useFormContext } from "react-hook-form"
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 const TextFieldComponent = styled(TextField)(({theme}) => ({    
     '& .MuiInputBase-root': {
@@ -44,8 +46,41 @@ const TextFieldComponent = styled(TextField)(({theme}) => ({
     }
 }))
 
-const Input = ({name, label, type, ...rest}: {name: string, label: string, type: string, [key: string]: any}) => {
+type IInputPorps = { name: string, label: string, type: string, [key: string]: any }
+
+const Input = ({name, label, type, ...rest}: IInputPorps) => {
     return <TextFieldComponent fullWidth name={name} label={label} type={type} {...rest} />
+}
+
+export const RHFInput = (props: IInputPorps) => {
+    const { control } = useFormContext()
+    return (<Controller
+        control={control}
+        name={props.name}
+        render={({ field: { onChange, onBlur, value, ref }, fieldState }) => { 
+            const hasErrorMessage = fieldState.error?.message
+            return <Stack gap={1}>
+                <Input
+                    {...props}
+                    error={!!hasErrorMessage}
+                    onChange={onChange} // send value to hook form
+                    onBlur={onBlur} // notify when input is touched
+                    value={value} // return updated value
+                    ref={ref} // set ref for focus management
+                />
+                {hasErrorMessage && <InputError message={hasErrorMessage} />}
+            </Stack>
+        }}
+    />)
+}
+
+const InputError = ({ message }: {message: string}) => {
+    return (
+        <Stack flexDirection="row" gap={1} sx={{color:(theme) => theme.palette.error.main}}>
+            <ErrorOutlineIcon />
+            <Typography>{message}</Typography>
+        </Stack>
+    )
 }
 
 export default Input

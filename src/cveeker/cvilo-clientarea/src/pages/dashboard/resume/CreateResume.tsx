@@ -3,7 +3,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import FormProvider from "../../../provider/FormProvider";
-import Input from "../../../components/Input";
+import { RHFInput as Input } from "../../../components/Input";
 import Button from "../../../components/Button";
 import { Add, Delete, ExpandMore } from "@mui/icons-material";
 
@@ -174,6 +174,7 @@ const CreateResume = () => {
     resolver: yupResolver(ResumeSchema),
     defaultValues,
   });
+
 
   // Dynamic fields
   const expArray = useFieldArray({ control: methods.control, name: "experience" });
