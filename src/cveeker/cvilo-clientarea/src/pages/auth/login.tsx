@@ -32,7 +32,7 @@ const Login = () => {
       <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
         <Logo />
       </Box>
-      <FormProvider methods={methods}>
+      <FormProvider onSubmit={onSubmit} methods={methods}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={2}>
             <Input name="email" label="Email" type="email" />

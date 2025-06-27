@@ -45,7 +45,7 @@ const TextFieldComponent = styled(TextField)(({theme}) => ({
 }))
 
 const Input = ({name, label, type, ...rest}: {name: string, label: string, type: string, [key: string]: any}) => {
-    return <TextFieldComponent name={name} label={label} type={type} {...rest} />
+    return <TextFieldComponent fullWidth name={name} label={label} type={type} {...rest} />
 }
 
 export default Input

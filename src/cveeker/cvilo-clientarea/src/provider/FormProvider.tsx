@@ -1,7 +1,21 @@
-import { FormProvider as ReactHookFormProvider, type UseFormReturn } from "react-hook-form"
+import { FormProvider as ReactHookFormProvider, type UseFormReturn, type FieldValues } from "react-hook-form"
 
-const FormProvider = ({ children, methods }: { children: React.ReactNode, methods: UseFormReturn }) => {
-    return <ReactHookFormProvider {...methods}>{children}</ReactHookFormProvider>
+type FormProviderProps<T extends FieldValues> = {
+  children: React.ReactNode;
+  onSubmit: (data: T) => void;
+  methods: UseFormReturn<T>;
+};
+
+function FormProvider<T extends FieldValues>({
+  children,
+  methods,
+  onSubmit,
+}: FormProviderProps<T>) {
+  return (
+    <ReactHookFormProvider {...methods}>
+      <form onSubmit={methods.handleSubmit(onSubmit)}>{children}</form>
+    </ReactHookFormProvider>
+  );
 }
 
 export default FormProvider
