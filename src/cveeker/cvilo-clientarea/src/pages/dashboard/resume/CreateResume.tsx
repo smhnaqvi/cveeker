@@ -7,8 +7,6 @@ import { RHFInput as Input } from "../../../components/Input";
 import Button from "../../../components/Button";
 import { Add, Delete, ExpandMore } from "@mui/icons-material";
 import { useRef } from "react";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
 import ResumePreview from "../../../components/ResumePreview2";
 import TemplateSelector from "../../../components/TemplateSelector";
 
@@ -174,19 +172,6 @@ const CreateResume = () => {
   const watchAll = methods.watch();
   const previewRef = useRef<HTMLDivElement>(null);
   
-
-  const handleDownload = async () => {
-    if (!previewRef.current) return;
-    const canvas = await html2canvas(previewRef.current);
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    pdf.save(`${watchAll.fullName}_Resume.pdf`);
-  };
-
   // Dynamic fields
   const expArray = useFieldArray({ control: methods.control, name: "experience" });
   const eduArray = useFieldArray({ control: methods.control, name: "education" });
@@ -531,29 +516,28 @@ const CreateResume = () => {
               </Button>
             </Stack>
           </FormProvider>
-          <Button variant="contained" onClick={handleDownload} sx={{ mt: 2 }}>
+          <Button variant="contained" sx={{ mt: 2 }}>
             Download PDF
           </Button>
         </Grid>
         <Grid size={6}>
-            <Stack marginBottom={2}>
-              <Typography variant="h6" gutterBottom>
-                Select a Template
-              </Typography>
-              <Controller
-                name="theme"
-                control={methods.control}
-                defaultValue={watchAll.theme || 'light'}
-                render={({ field }) => (
-                  <TemplateSelector
-                    selected={field.value}
-                    onSelect={field.onChange}
-                  />
-                )}
-              />
-            </Stack>
-          <Box
-            ref={previewRef}
+          <Stack marginBottom={2}>
+            <Typography variant="h6" gutterBottom>
+              Select a Template
+            </Typography>
+            <Controller
+              name="theme"
+              control={methods.control}
+              defaultValue={watchAll.theme || 'light'}
+              render={({ field }) => (
+                <TemplateSelector
+                  selected={field.value}
+                  onSelect={field.onChange}
+                />
+              )}
+            />
+          </Stack>
+          <Card ref={previewRef}
             sx={{
               position: 'sticky',
               maxHeight: 'calc(100vh - 48px)',
@@ -566,7 +550,7 @@ const CreateResume = () => {
               data={watchAll}
               theme={watchAll.theme}
             />
-          </Box>
+          </Card>
         </Grid>
       </Grid>
     </Box>
