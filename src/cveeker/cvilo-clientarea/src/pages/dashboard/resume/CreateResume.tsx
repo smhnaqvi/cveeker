@@ -1,5 +1,5 @@
 import { Box, Stack, Typography, IconButton, Grid, Checkbox, FormControlLabel, Card, CardHeader, CardContent, Accordion, AccordionSummary, AccordionDetails } from "@mui/material";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import FormProvider from "../../../provider/FormProvider";
@@ -9,7 +9,8 @@ import { Add, Delete, ExpandMore } from "@mui/icons-material";
 import { useRef } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import ResumePreview from "../../../components/resumePreview";
+import ResumePreview from "../../../components/ResumePreview2";
+import TemplateSelector from "../../../components/TemplateSelector";
 
 // Reusable nested schemas
 const workExperienceSchema = yup.object({
@@ -96,81 +97,73 @@ export type ResumeFormValues = yup.InferType<typeof ResumeSchema>;
 
 // Default values to match the schema structure exactly
 const defaultValues: ResumeFormValues = {
-  title: "",
-  isActive: false,
-  fullName: "",
-  email: "",
-  phone: "",
-  address: "",
-  website: "",
-  linkedin: "",
-  github: "",
-  summary: "",
-  objective: "",
+  title: "Senior Software Engineer Resume",
+  isActive: true,
+  fullName: "John Doe",
+  email: "john.doe@example.com",
+  phone: "+1 (555) 123-4567",
+  address: "1234 Elm Street, Springfield, IL",
+  website: "https://johndoe.dev",
+  linkedin: "https://linkedin.com/in/johndoe",
+  github: "https://github.com/johndoe",
+  summary: "Experienced software engineer with a history of building scalable web applications using modern technologies.",
+  objective: "To leverage my full-stack development skills in a challenging role at a forward-thinking company.",
   experience: [
     {
-      company: "",
-      position: "",
-      location: "",
-      startDate: "",
+      company: "OpenAI",
+      position: "Software Engineer",
+      location: "San Francisco, CA",
+      startDate: "2019-06-01",
       endDate: "",
-      isCurrent: false,
-      description: "",
-      technologies: "",
+      isCurrent: true,
+      description: "Developed AI-driven features, collaborated with research teams, and optimized performance across services.",
+      technologies: "JavaScript, React, Node.js, Python"
     }
   ],
   education: [
     {
-      institution: "",
-      degree: "",
-      fieldOfStudy: "",
-      location: "",
-      startDate: "",
-      endDate: "",
-      gpa: "",
-      description: "",
+      institution: "University of Illinois Urbana-Champaign",
+      degree: "Bachelor of Science",
+      fieldOfStudy: "Computer Science",
+      location: "Urbana, IL",
+      startDate: "2012-09-01",
+      endDate: "2016-05-15",
+      gpa: "3.8",
+      description: "Focused on software engineering, algorithms, and data structures. Graduated with honors."
     }
   ],
   skills: [
-    {
-      name: "",
-      category: "",
-      level: 3,
-      yearsExp: 0,
-    }
+    { name: "JavaScript", category: "Programming", level: 5, yearsExp: 7 }
   ],
   languages: [
-    {
-      name: "",
-      proficiency: "",
-    }
+    { name: "English", proficiency: "Native" }
   ],
   certifications: [
     {
-      name: "",
-      issuer: "",
-      issueDate: "",
-      expiryDate: "",
-      credentialID: "",
-      url: "",
+      name: "Certified Kubernetes Administrator",
+      issuer: "Cloud Native Computing Foundation",
+      issueDate: "2020-08-20",
+      expiryDate: "2023-08-20",
+      credentialID: "CKA-XXXXX",
+      url: "https://www.cncf.io/certification/cka/"
     }
   ],
   projects: [
     {
-      name: "",
-      description: "",
-      technologies: "",
-      startDate: "",
-      endDate: "",
-      url: "",
-      github: "",
+      name: "Personal Portfolio Website",
+      description: "A responsive website showcasing my projects and blog posts.",
+      technologies: "React, Next.js, Tailwind CSS",
+      startDate: "2021-01-15",
+      endDate: "2021-03-30",
+      url: "https://johndoe.dev",
+      github: "https://github.com/johndoe/portfolio"
     }
   ],
-  awards: "",
-  interests: "",
-  references: "",
-  template: "",
-  theme: "",
+  awards: "Dean's List (2013, 2014, 2015)",
+  interests: "Hiking, Photography, Open Source Contribution",
+  references: "Available upon request",
+  template: "light",
+  theme: "light",
 };
 
 const CreateResume = () => {
@@ -543,12 +536,29 @@ const CreateResume = () => {
           </Button>
         </Grid>
         <Grid size={6}>
+            <Stack marginBottom={2}>
+              <Typography variant="h6" gutterBottom>
+                Select a Template
+              </Typography>
+              <Controller
+                name="theme"
+                control={methods.control}
+                defaultValue={watchAll.theme || 'light'}
+                render={({ field }) => (
+                  <TemplateSelector
+                    selected={field.value}
+                    onSelect={field.onChange}
+                  />
+                )}
+              />
+            </Stack>
           <Box
             ref={previewRef}
             sx={{
               position: 'sticky',
+              maxHeight: 'calc(100vh - 48px)',
               top: '24px',
-              maxHeight: '80vh',
+              bottom: '24px',
               overflowY: 'auto',
             }}
           >
