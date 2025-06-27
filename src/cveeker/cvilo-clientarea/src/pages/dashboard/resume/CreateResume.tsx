@@ -6,6 +6,10 @@ import FormProvider from "../../../provider/FormProvider";
 import { RHFInput as Input } from "../../../components/Input";
 import Button from "../../../components/Button";
 import { Add, Delete, ExpandMore } from "@mui/icons-material";
+import { useRef } from "react";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import ResumePreview from "../../../components/ResumePreview";
 
 // Reusable nested schemas
 const workExperienceSchema = yup.object({
@@ -174,6 +178,19 @@ const CreateResume = () => {
     resolver: yupResolver(ResumeSchema),
     defaultValues,
   });
+  const watchAll = methods.watch();
+  const previewRef = useRef<HTMLDivElement>(null);
+  const handleDownload = async () => {
+    if (!previewRef.current) return;
+    const canvas = await html2canvas(previewRef.current);
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    pdf.save(`${watchAll.fullName}_Resume.pdf`);
+  };
 
 
   // Dynamic fields
@@ -190,336 +207,346 @@ const CreateResume = () => {
   };
 
   return (
-    <Box maxWidth={900} mx="auto" mt={4} mb={8}>
-      <Typography variant="h5" mb={2} fontWeight={600}>
-        Create Resume
-      </Typography>
-      <FormProvider methods={methods} onSubmit={onSubmit}>
-        <Stack spacing={3}>
-          {/* Basic Info */}
-          <Card>
-            <CardHeader title="Basic Info" />
-            <CardContent>
-              <Grid container spacing={2}>
-                <Grid size={6}><Input type="text" name="title" label="Resume Title" /></Grid>
-                <Grid size={6}><Input name="fullName" label="Full Name" type="text" /></Grid>
-                <Grid size={6}><Input name="email" label="Email" type="email" /></Grid>
-                <Grid size={6}><Input name="phone" label="Phone" type="text" /></Grid>
-                <Grid size={6}><Input name="address" label="Address" type="text" /></Grid>
-                <Grid size={6}><Input name="website" label="Website" type="text" /></Grid>
-                <Grid size={6}><Input name="linkedin" label="LinkedIn" type="text" /></Grid>
-                <Grid size={6}><Input name="github" label="GitHub" type="text" /></Grid>
-                <Grid size={12}><Input name="summary" label="Professional Summary" type="text" multiline rows={2} /></Grid>
-                <Grid size={12}><Input name="objective" label="Objective" type="text" multiline rows={2} /></Grid>
-              </Grid>
-            </CardContent>
-          </Card>
+    <Box maxWidth={1200} mx="auto" mt={4} mb={8}>
+      <Grid container spacing={4}>
+        <Grid size={6}>
+          {/* Existing form starts here */}
+          <FormProvider methods={methods} onSubmit={onSubmit}>
+            <Stack spacing={3}>
+              {/* Basic Info */}
+              <Card>
+                <CardHeader title="Basic Info" />
+                <CardContent>
+                  <Grid container spacing={2}>
+                    <Grid size={6}><Input type="text" name="title" label="Resume Title" /></Grid>
+                    <Grid size={6}><Input name="fullName" label="Full Name" type="text" /></Grid>
+                    <Grid size={6}><Input name="email" label="Email" type="email" /></Grid>
+                    <Grid size={6}><Input name="phone" label="Phone" type="text" /></Grid>
+                    <Grid size={6}><Input name="address" label="Address" type="text" /></Grid>
+                    <Grid size={6}><Input name="website" label="Website" type="text" /></Grid>
+                    <Grid size={6}><Input name="linkedin" label="LinkedIn" type="text" /></Grid>
+                    <Grid size={6}><Input name="github" label="GitHub" type="text" /></Grid>
+                    <Grid size={12}><Input name="summary" label="Professional Summary" type="text" multiline rows={2} /></Grid>
+                    <Grid size={12}><Input name="objective" label="Objective" type="text" multiline rows={2} /></Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
 
-          {/* Experience */}
-          <Card>
-            <CardHeader title="Experience" />
-            <CardContent>
-              <Stack spacing={2}>
-                {expArray.fields.map((item, idx) => (
-                  <Accordion key={item.id} disableGutters>
-                    <AccordionSummary expandIcon={<ExpandMore />}>
-                      <Box display="flex" alignItems="center" width="100%" justifyContent="space-between">
-                        <Typography>
-                          {methods.getValues(`experience.${idx}.company`) || "New Experience"}
-                        </Typography>
-                        <IconButton
-                          onClick={e => { e.stopPropagation(); expArray.remove(idx); }}
-                          color="error"
-                          size="small"
-                          sx={{ ml: 2 }}
-                        >
-                          <Delete />
-                        </IconButton>
-                      </Box>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      <Grid container spacing={2} alignItems="center">
-                        <Grid size={6}><Input name={`experience.${idx}.company`} label="Company" type="text" /></Grid>
-                        <Grid size={6}><Input name={`experience.${idx}.position`} label="Position" type="text" /></Grid>
-                        <Grid size={6}><Input name={`experience.${idx}.location`} label="Location" type="text" /></Grid>
-                        <Grid size={3}><Input name={`experience.${idx}.startDate`} label="Start Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
-                        <Grid size={3}><Input name={`experience.${idx}.endDate`} label="End Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
-                        <Grid size={6}><Input name={`experience.${idx}.description`} label="Description" type="text" multiline rows={2} /></Grid>
-                        <Grid size={6}><Input name={`experience.${idx}.technologies`} label="Technologies (comma separated)" type="text" multiline rows={2} /></Grid>
-                        <Grid size={3}><FormControlLabel control={<Checkbox {...methods.register(`experience.${idx}.isCurrent`)} />} label="Current Job" /></Grid>
-                      </Grid>
-                    </AccordionDetails>
-                  </Accordion>
-                ))}
-                <Button startIcon={<Add />} onClick={() => expArray.append({ 
-                  company: "", 
-                  position: "", 
-                  location: "", 
-                  startDate: "", 
-                  endDate: "", 
-                  isCurrent: false, 
-                  description: "", 
-                  technologies: "" 
-                })}>
-                  Add Experience
-                </Button>
-              </Stack>
-            </CardContent>
-          </Card>
+              {/* Experience */}
+              <Card>
+                <CardHeader title="Experience" />
+                <CardContent>
+                  <Stack spacing={2}>
+                    {expArray.fields.map((item, idx) => (
+                      <Accordion key={item.id} disableGutters>
+                        <AccordionSummary expandIcon={<ExpandMore />}>
+                          <Box display="flex" alignItems="center" width="100%" justifyContent="space-between">
+                            <Typography>
+                              {methods.getValues(`experience.${idx}.company`) || "New Experience"}
+                            </Typography>
+                            <IconButton
+                              onClick={e => { e.stopPropagation(); expArray.remove(idx); }}
+                              color="error"
+                              size="small"
+                              sx={{ ml: 2 }}
+                            >
+                              <Delete />
+                            </IconButton>
+                          </Box>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                          <Grid container spacing={2} alignItems="center">
+                            <Grid size={6}><Input name={`experience.${idx}.company`} label="Company" type="text" /></Grid>
+                            <Grid size={6}><Input name={`experience.${idx}.position`} label="Position" type="text" /></Grid>
+                            <Grid size={6}><Input name={`experience.${idx}.location`} label="Location" type="text" /></Grid>
+                            <Grid size={3}><Input name={`experience.${idx}.startDate`} label="Start Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
+                            <Grid size={3}><Input name={`experience.${idx}.endDate`} label="End Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
+                            <Grid size={6}><Input name={`experience.${idx}.description`} label="Description" type="text" multiline rows={2} /></Grid>
+                            <Grid size={6}><Input name={`experience.${idx}.technologies`} label="Technologies (comma separated)" type="text" multiline rows={2} /></Grid>
+                            <Grid size={3}><FormControlLabel control={<Checkbox {...methods.register(`experience.${idx}.isCurrent`)} />} label="Current Job" /></Grid>
+                          </Grid>
+                        </AccordionDetails>
+                      </Accordion>
+                    ))}
+                    <Button startIcon={<Add />} onClick={() => expArray.append({ 
+                      company: "", 
+                      position: "", 
+                      location: "", 
+                      startDate: "", 
+                      endDate: "", 
+                      isCurrent: false, 
+                      description: "", 
+                      technologies: "" 
+                    })}>
+                      Add Experience
+                    </Button>
+                  </Stack>
+                </CardContent>
+              </Card>
 
-          {/* Education */}
-          <Card>
-            <CardHeader title="Education" />
-            <CardContent>
-              <Stack spacing={2}>
-                {eduArray.fields.map((item, idx) => (
-                  <Accordion key={item.id} disableGutters>
-                    <AccordionSummary expandIcon={<ExpandMore />}>
-                      <Box display="flex" alignItems="center" width="100%" justifyContent="space-between">
-                        <Typography>
-                          {methods.getValues(`education.${idx}.institution`) || "New Education"}
-                        </Typography>
-                        <IconButton
-                          onClick={e => { e.stopPropagation(); eduArray.remove(idx); }}
-                          color="error"
-                          size="small"
-                          sx={{ ml: 2 }}
-                        >
-                          <Delete />
-                        </IconButton>
-                      </Box>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      <Grid container spacing={2} alignItems="center">
-                        <Grid size={6}><Input name={`education.${idx}.institution`} label="Institution" type="text" /></Grid>
-                        <Grid size={6}><Input name={`education.${idx}.degree`} label="Degree" type="text" /></Grid>
-                        <Grid size={6}><Input name={`education.${idx}.fieldOfStudy`} label="Field of Study" type="text" /></Grid>
-                        <Grid size={6}><Input name={`education.${idx}.location`} label="Location" type="text" /></Grid>
-                        <Grid size={3}><Input name={`education.${idx}.startDate`} label="Start Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
-                        <Grid size={3}><Input name={`education.${idx}.endDate`} label="End Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
-                        <Grid size={6}><Input name={`education.${idx}.gpa`} label="GPA" type="text" /></Grid>
-                        <Grid size={12}><Input name={`education.${idx}.description`} label="Description" type="text" multiline rows={2} /></Grid>
-                      </Grid>
-                    </AccordionDetails>
-                  </Accordion>
-                ))}
-                <Button startIcon={<Add />} onClick={() => eduArray.append({ 
-                  institution: "", 
-                  degree: "", 
-                  fieldOfStudy: "", 
-                  location: "", 
-                  startDate: "", 
-                  endDate: "", 
-                  gpa: "", 
-                  description: "" 
-                })}>
-                  Add Education
-                </Button>
-              </Stack>
-            </CardContent>
-          </Card>
+              {/* Education */}
+              <Card>
+                <CardHeader title="Education" />
+                <CardContent>
+                  <Stack spacing={2}>
+                    {eduArray.fields.map((item, idx) => (
+                      <Accordion key={item.id} disableGutters>
+                        <AccordionSummary expandIcon={<ExpandMore />}>
+                          <Box display="flex" alignItems="center" width="100%" justifyContent="space-between">
+                            <Typography>
+                              {methods.getValues(`education.${idx}.institution`) || "New Education"}
+                            </Typography>
+                            <IconButton
+                              onClick={e => { e.stopPropagation(); eduArray.remove(idx); }}
+                              color="error"
+                              size="small"
+                              sx={{ ml: 2 }}
+                            >
+                              <Delete />
+                            </IconButton>
+                          </Box>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                          <Grid container spacing={2} alignItems="center">
+                            <Grid size={6}><Input name={`education.${idx}.institution`} label="Institution" type="text" /></Grid>
+                            <Grid size={6}><Input name={`education.${idx}.degree`} label="Degree" type="text" /></Grid>
+                            <Grid size={6}><Input name={`education.${idx}.fieldOfStudy`} label="Field of Study" type="text" /></Grid>
+                            <Grid size={6}><Input name={`education.${idx}.location`} label="Location" type="text" /></Grid>
+                            <Grid size={3}><Input name={`education.${idx}.startDate`} label="Start Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
+                            <Grid size={3}><Input name={`education.${idx}.endDate`} label="End Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
+                            <Grid size={6}><Input name={`education.${idx}.gpa`} label="GPA" type="text" /></Grid>
+                            <Grid size={12}><Input name={`education.${idx}.description`} label="Description" type="text" multiline rows={2} /></Grid>
+                          </Grid>
+                        </AccordionDetails>
+                      </Accordion>
+                    ))}
+                    <Button startIcon={<Add />} onClick={() => eduArray.append({ 
+                      institution: "", 
+                      degree: "", 
+                      fieldOfStudy: "", 
+                      location: "", 
+                      startDate: "", 
+                      endDate: "", 
+                      gpa: "", 
+                      description: "" 
+                    })}>
+                      Add Education
+                    </Button>
+                  </Stack>
+                </CardContent>
+              </Card>
 
-          {/* Skills */}
-          <Card>
-            <CardHeader title="Skills" />
-            <CardContent>
-              <Stack spacing={2}>
-                {skillArray.fields.map((item, idx) => (
-                  <Accordion key={item.id} disableGutters>
-                    <AccordionSummary expandIcon={<ExpandMore />}>
-                      <Box display="flex" alignItems="center" width="100%" justifyContent="space-between">
-                        <Typography>
-                          {methods.getValues(`skills.${idx}.name`) || "New Skill"}
-                        </Typography>
-                        <IconButton
-                          onClick={e => { e.stopPropagation(); skillArray.remove(idx); }}
-                          color="error"
-                          size="small"
-                          sx={{ ml: 2 }}
-                        >
-                          <Delete />
-                        </IconButton>
-                      </Box>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      <Grid container spacing={2} alignItems="center">
-                        <Grid size={4}><Input name={`skills.${idx}.name`} label="Skill Name" type="text" /></Grid>
-                        <Grid size={4}><Input name={`skills.${idx}.category`} label="Category" type="text" /></Grid>
-                        <Grid size={2}><Input name={`skills.${idx}.level`} label="Level (1-5)" type="number" inputProps={{ min: 1, max: 5 }} /></Grid>
-                        <Grid size={2}><Input name={`skills.${idx}.yearsExp`} label="Years Exp" type="number" /></Grid>
-                      </Grid>
-                    </AccordionDetails>
-                  </Accordion>
-                ))}
-                <Button startIcon={<Add />} onClick={() => skillArray.append({ 
-                  name: "", 
-                  category: "", 
-                  level: 3, 
-                  yearsExp: 0 
-                })}>
-                  Add Skill
-                </Button>
-              </Stack>
-            </CardContent>
-          </Card>
+              {/* Skills */}
+              <Card>
+                <CardHeader title="Skills" />
+                <CardContent>
+                  <Stack spacing={2}>
+                    {skillArray.fields.map((item, idx) => (
+                      <Accordion key={item.id} disableGutters>
+                        <AccordionSummary expandIcon={<ExpandMore />}>
+                          <Box display="flex" alignItems="center" width="100%" justifyContent="space-between">
+                            <Typography>
+                              {methods.getValues(`skills.${idx}.name`) || "New Skill"}
+                            </Typography>
+                            <IconButton
+                              onClick={e => { e.stopPropagation(); skillArray.remove(idx); }}
+                              color="error"
+                              size="small"
+                              sx={{ ml: 2 }}
+                            >
+                              <Delete />
+                            </IconButton>
+                          </Box>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                          <Grid container spacing={2} alignItems="center">
+                            <Grid size={4}><Input name={`skills.${idx}.name`} label="Skill Name" type="text" /></Grid>
+                            <Grid size={4}><Input name={`skills.${idx}.category`} label="Category" type="text" /></Grid>
+                            <Grid size={2}><Input name={`skills.${idx}.level`} label="Level (1-5)" type="number" inputProps={{ min: 1, max: 5 }} /></Grid>
+                            <Grid size={2}><Input name={`skills.${idx}.yearsExp`} label="Years Exp" type="number" /></Grid>
+                          </Grid>
+                        </AccordionDetails>
+                      </Accordion>
+                    ))}
+                    <Button startIcon={<Add />} onClick={() => skillArray.append({ 
+                      name: "", 
+                      category: "", 
+                      level: 3, 
+                      yearsExp: 0 
+                    })}>
+                      Add Skill
+                    </Button>
+                  </Stack>
+                </CardContent>
+              </Card>
 
-          {/* Languages */}
-          <Card>
-            <CardHeader title="Languages" />
-            <CardContent>
-              <Stack spacing={2}>
-                {langArray.fields.map((item, idx) => (
-                  <Accordion key={item.id} disableGutters>
-                    <AccordionSummary expandIcon={<ExpandMore />}>
-                      <Box display="flex" alignItems="center" width="100%" justifyContent="space-between">
-                        <Typography>
-                          {methods.getValues(`languages.${idx}.name`) || "New Language"}
-                        </Typography>
-                        <IconButton
-                          onClick={e => { e.stopPropagation(); langArray.remove(idx); }}
-                          color="error"
-                          size="small"
-                          sx={{ ml: 2 }}
-                        >
-                          <Delete />
-                        </IconButton>
-                      </Box>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      <Grid container spacing={2} alignItems="center">
-                        <Grid size={6}><Input name={`languages.${idx}.name`} label="Language" type="text" /></Grid>
-                        <Grid size={6}><Input name={`languages.${idx}.proficiency`} label="Proficiency" type="text" /></Grid>
-                      </Grid>
-                    </AccordionDetails>
-                  </Accordion>
-                ))}
-                <Button startIcon={<Add />} onClick={() => langArray.append({ 
-                  name: "", 
-                  proficiency: "" 
-                })}>
-                  Add Language
-                </Button>
-              </Stack>
-            </CardContent>
-          </Card>
+              {/* Languages */}
+              <Card>
+                <CardHeader title="Languages" />
+                <CardContent>
+                  <Stack spacing={2}>
+                    {langArray.fields.map((item, idx) => (
+                      <Accordion key={item.id} disableGutters>
+                        <AccordionSummary expandIcon={<ExpandMore />}>
+                          <Box display="flex" alignItems="center" width="100%" justifyContent="space-between">
+                            <Typography>
+                              {methods.getValues(`languages.${idx}.name`) || "New Language"}
+                            </Typography>
+                            <IconButton
+                              onClick={e => { e.stopPropagation(); langArray.remove(idx); }}
+                              color="error"
+                              size="small"
+                              sx={{ ml: 2 }}
+                            >
+                              <Delete />
+                            </IconButton>
+                          </Box>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                          <Grid container spacing={2} alignItems="center">
+                            <Grid size={6}><Input name={`languages.${idx}.name`} label="Language" type="text" /></Grid>
+                            <Grid size={6}><Input name={`languages.${idx}.proficiency`} label="Proficiency" type="text" /></Grid>
+                          </Grid>
+                        </AccordionDetails>
+                      </Accordion>
+                    ))}
+                    <Button startIcon={<Add />} onClick={() => langArray.append({ 
+                      name: "", 
+                      proficiency: "" 
+                    })}>
+                      Add Language
+                    </Button>
+                  </Stack>
+                </CardContent>
+              </Card>
 
-          {/* Certifications */}
-          <Card>
-            <CardHeader title="Certifications" />
-            <CardContent>
-              <Stack spacing={2}>
-                {certArray.fields.map((item, idx) => (
-                  <Accordion key={item.id} disableGutters>
-                    <AccordionSummary expandIcon={<ExpandMore />}>
-                      <Box display="flex" alignItems="center" width="100%" justifyContent="space-between">
-                        <Typography>
-                          {methods.getValues(`certifications.${idx}.name`) || "New Certification"}
-                        </Typography>
-                        <IconButton
-                          onClick={e => { e.stopPropagation(); certArray.remove(idx); }}
-                          color="error"
-                          size="small"
-                          sx={{ ml: 2 }}
-                        >
-                          <Delete />
-                        </IconButton>
-                      </Box>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      <Grid container spacing={2} alignItems="center">
-                        <Grid size={4}><Input name={`certifications.${idx}.name`} label="Name" type="text" /></Grid>
-                        <Grid size={4}><Input name={`certifications.${idx}.issuer`} label="Issuer" type="text" /></Grid>
-                        <Grid size={2}><Input name={`certifications.${idx}.issueDate`} label="Issue Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
-                        <Grid size={2}><Input name={`certifications.${idx}.expiryDate`} label="Expiry Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
-                        <Grid size={4}><Input name={`certifications.${idx}.credentialID`} label="Credential ID" type="text" /></Grid>
-                        <Grid size={4}><Input name={`certifications.${idx}.url`} label="URL" type="text" /></Grid>
-                      </Grid>
-                    </AccordionDetails>
-                  </Accordion>
-                ))}
-                <Button startIcon={<Add />} onClick={() => certArray.append({ 
-                  name: "", 
-                  issuer: "", 
-                  issueDate: "", 
-                  expiryDate: "", 
-                  credentialID: "", 
-                  url: "" 
-                })}>
-                  Add Certification
-                </Button>
-              </Stack>
-            </CardContent>
-          </Card>
+              {/* Certifications */}
+              <Card>
+                <CardHeader title="Certifications" />
+                <CardContent>
+                  <Stack spacing={2}>
+                    {certArray.fields.map((item, idx) => (
+                      <Accordion key={item.id} disableGutters>
+                        <AccordionSummary expandIcon={<ExpandMore />}>
+                          <Box display="flex" alignItems="center" width="100%" justifyContent="space-between">
+                            <Typography>
+                              {methods.getValues(`certifications.${idx}.name`) || "New Certification"}
+                            </Typography>
+                            <IconButton
+                              onClick={e => { e.stopPropagation(); certArray.remove(idx); }}
+                              color="error"
+                              size="small"
+                              sx={{ ml: 2 }}
+                            >
+                              <Delete />
+                            </IconButton>
+                          </Box>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                          <Grid container spacing={2} alignItems="center">
+                            <Grid size={4}><Input name={`certifications.${idx}.name`} label="Name" type="text" /></Grid>
+                            <Grid size={4}><Input name={`certifications.${idx}.issuer`} label="Issuer" type="text" /></Grid>
+                            <Grid size={2}><Input name={`certifications.${idx}.issueDate`} label="Issue Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
+                            <Grid size={2}><Input name={`certifications.${idx}.expiryDate`} label="Expiry Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
+                            <Grid size={4}><Input name={`certifications.${idx}.credentialID`} label="Credential ID" type="text" /></Grid>
+                            <Grid size={4}><Input name={`certifications.${idx}.url`} label="URL" type="text" /></Grid>
+                          </Grid>
+                        </AccordionDetails>
+                      </Accordion>
+                    ))}
+                    <Button startIcon={<Add />} onClick={() => certArray.append({ 
+                      name: "", 
+                      issuer: "", 
+                      issueDate: "", 
+                      expiryDate: "", 
+                      credentialID: "", 
+                      url: "" 
+                    })}>
+                      Add Certification
+                    </Button>
+                  </Stack>
+                </CardContent>
+              </Card>
 
-          {/* Projects */}
-          <Card>
-            <CardHeader title="Projects" />
-            <CardContent>
-              <Stack spacing={2}>
-                {projArray.fields.map((item, idx) => (
-                  <Accordion key={item.id} disableGutters>
-                    <AccordionSummary expandIcon={<ExpandMore />}>
-                      <Box display="flex" alignItems="center" width="100%" justifyContent="space-between">
-                        <Typography>
-                          {methods.getValues(`projects.${idx}.name`) || "New Project"}
-                        </Typography>
-                        <IconButton
-                          onClick={e => { e.stopPropagation(); projArray.remove(idx); }}
-                          color="error"
-                          size="small"
-                          sx={{ ml: 2 }}
-                        >
-                          <Delete />
-                        </IconButton>
-                      </Box>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      <Grid container spacing={2} alignItems="center">
-                        <Grid size={4}><Input name={`projects.${idx}.name`} label="Project Name" type="text" /></Grid>
-                        <Grid size={4}><Input name={`projects.${idx}.description`} label="Description" type="text" /></Grid>
-                        <Grid size={4}><Input name={`projects.${idx}.technologies`} label="Technologies (comma separated)" type="text" /></Grid>
-                        <Grid size={3}><Input name={`projects.${idx}.startDate`} label="Start Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
-                        <Grid size={3}><Input name={`projects.${idx}.endDate`} label="End Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
-                        <Grid size={3}><Input name={`projects.${idx}.url`} label="URL" type="text" /></Grid>
-                        <Grid size={3}><Input name={`projects.${idx}.github`} label="GitHub" type="text" /></Grid>
-                      </Grid>
-                    </AccordionDetails>
-                  </Accordion>
-                ))}
-                <Button startIcon={<Add />} onClick={() => projArray.append({ 
-                  name: "", 
-                  description: "", 
-                  technologies: "", 
-                  startDate: "", 
-                  endDate: "", 
-                  url: "", 
-                  github: "" 
-                })}>
-                  Add Project
-                </Button>
-              </Stack>
-            </CardContent>
-          </Card>
+              {/* Projects */}
+              <Card>
+                <CardHeader title="Projects" />
+                <CardContent>
+                  <Stack spacing={2}>
+                    {projArray.fields.map((item, idx) => (
+                      <Accordion key={item.id} disableGutters>
+                        <AccordionSummary expandIcon={<ExpandMore />}>
+                          <Box display="flex" alignItems="center" width="100%" justifyContent="space-between">
+                            <Typography>
+                              {methods.getValues(`projects.${idx}.name`) || "New Project"}
+                            </Typography>
+                            <IconButton
+                              onClick={e => { e.stopPropagation(); projArray.remove(idx); }}
+                              color="error"
+                              size="small"
+                              sx={{ ml: 2 }}
+                            >
+                              <Delete />
+                            </IconButton>
+                          </Box>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                          <Grid container spacing={2} alignItems="center">
+                            <Grid size={4}><Input name={`projects.${idx}.name`} label="Project Name" type="text" /></Grid>
+                            <Grid size={4}><Input name={`projects.${idx}.description`} label="Description" type="text" /></Grid>
+                            <Grid size={4}><Input name={`projects.${idx}.technologies`} label="Technologies (comma separated)" type="text" /></Grid>
+                            <Grid size={3}><Input name={`projects.${idx}.startDate`} label="Start Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
+                            <Grid size={3}><Input name={`projects.${idx}.endDate`} label="End Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
+                            <Grid size={3}><Input name={`projects.${idx}.url`} label="URL" type="text" /></Grid>
+                            <Grid size={3}><Input name={`projects.${idx}.github`} label="GitHub" type="text" /></Grid>
+                          </Grid>
+                        </AccordionDetails>
+                      </Accordion>
+                    ))}
+                    <Button startIcon={<Add />} onClick={() => projArray.append({ 
+                      name: "", 
+                      description: "", 
+                      technologies: "", 
+                      startDate: "", 
+                      endDate: "", 
+                      url: "", 
+                      github: "" 
+                    })}>
+                      Add Project
+                    </Button>
+                  </Stack>
+                </CardContent>
+              </Card>
 
-          {/* Other Sections */}
-          <Card>
-            <CardHeader title="Other Sections" />
-            <CardContent>
-              <Grid container spacing={2}>
-                <Grid size={4}><Input name="awards" label="Awards" type="text" multiline rows={2} /></Grid>
-                <Grid size={4}><Input name="interests" label="Interests" type="text" multiline rows={2} /></Grid>
-                <Grid size={4}><Input name="references" label="References" type="text" multiline rows={2} /></Grid>
-                <Grid size={6}><Input name="template" label="Template" type="text" /></Grid>
-                <Grid size={6}><Input name="theme" label="Theme" type="text" /></Grid>
-              </Grid>
-            </CardContent>
-          </Card>
+              {/* Other Sections */}
+              <Card>
+                <CardHeader title="Other Sections" />
+                <CardContent>
+                  <Grid container spacing={2}>
+                    <Grid size={4}><Input name="awards" label="Awards" type="text" multiline rows={2} /></Grid>
+                    <Grid size={4}><Input name="interests" label="Interests" type="text" multiline rows={2} /></Grid>
+                    <Grid size={4}><Input name="references" label="References" type="text" multiline rows={2} /></Grid>
+                    <Grid size={6}><Input name="template" label="Template" type="text" /></Grid>
+                    <Grid size={6}><Input name="theme" label="Theme" type="text" /></Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
 
-          <Button type="submit" variant="contained" size="large">
-            Create Resume
+              <Button type="submit" variant="contained" size="large">
+                Create Resume
+              </Button>
+            </Stack>
+          </FormProvider>
+          <Button variant="contained" onClick={handleDownload} sx={{ mt: 2 }}>
+            Download PDF
           </Button>
-        </Stack>
-      </FormProvider>
+        </Grid>
+        <Grid size={6}>
+          <div ref={previewRef}>
+            <ResumePreview data={watchAll} theme={watchAll.theme} />
+          </div>
+        </Grid>
+      </Grid>
     </Box>
   );
 };
