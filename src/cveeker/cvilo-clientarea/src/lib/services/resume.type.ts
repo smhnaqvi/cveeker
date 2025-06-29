@@ -1,3 +1,5 @@
+import type { User } from "./types";
+
 // Resume form field types based on CreateResume.tsx schema
 export interface WorkExperience {
   company: string;
@@ -110,15 +112,6 @@ export interface Resume {
   deleted_at?: string;
 }
 
-// User type for resume relationships
-export interface User {
-  id: number;
-  name: string;
-  email: string;
-  created_at: string;
-  updated_at: string;
-}
-
 // Request types for API calls matching Go controller expectations
 export interface CreateResumeRequest {
   user_id: number;
@@ -171,10 +164,10 @@ export interface UpdateResumeRequest {
   theme?: string;
 }
 
-// API Response types matching Go controller responses
+// API Response types matching actual Go controller responses
 export interface ResumeListResponse {
   resumes: Resume[];
-  pagination?: {
+  pagination: {
     current_page: number;
     per_page: number;
     total: number;

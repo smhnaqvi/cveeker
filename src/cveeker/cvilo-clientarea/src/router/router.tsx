@@ -4,6 +4,7 @@ import Login from "../pages/auth/login";
 import ProtectionProvider from "../provider/ProtectionProvider";
 import CreateResume from "../pages/dashboard/resume/CreateResume";
 import PreviewResume from "../pages/dashboard/resume/PreviewResume";
+import ListResume from "../pages/dashboard/resume/ListResume";
 
 const router = createBrowserRouter([
     {
@@ -41,6 +42,10 @@ const router = createBrowserRouter([
                     {
                         path: ":id",
                         element: <PreviewResume />,
+                    },
+                    {
+                        path: "list",
+                        element: <ListResume />,
                     },
                 ],
             },

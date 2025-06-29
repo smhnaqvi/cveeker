@@ -9,7 +9,7 @@ import (
 )
 
 type ResumeModel struct {
-	gorm.Model
+	ID     uint      `json:"id" gorm:"primarykey"`
 	UserID uint      `json:"user_id" gorm:"not null"`
 	User   UserModel `json:"user" gorm:"foreignKey:UserID"`
 
@@ -50,6 +50,10 @@ type ResumeModel struct {
 	// Template and styling
 	Template string `json:"template" gorm:"default:'modern'"`
 	Theme    string `json:"theme" gorm:"default:'blue'"`
+
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `json:"deleted_at,omitempty" gorm:"index"`
 }
 
 // TableName overrides the table name used by Resume to `resumes`
