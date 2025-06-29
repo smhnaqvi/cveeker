@@ -9,6 +9,7 @@ import { Add, Delete, ExpandMore } from "@mui/icons-material";
 import { useRef } from "react";
 import ResumePreview from "../../../components/ResumePreview2";
 import TemplateSelector from "../../../components/TemplateSelector";
+import { resumeService, type ResumeFormData } from "../../../lib/services";
 
 // Reusable nested schemas
 const workExperienceSchema = yup.object({
@@ -180,9 +181,28 @@ const CreateResume = () => {
   const certArray = useFieldArray({ control: methods.control, name: "certifications" });
   const projArray = useFieldArray({ control: methods.control, name: "projects" });
 
-  const onSubmit = (data: ResumeFormValues) => {
-    // Handle resume creation logic here
-    console.log("Resume data:", data);
+  const onSubmit = async (data: ResumeFormValues) => {
+    try {
+      // Use the new service method to create resume from form data
+      // Note: You'll need to get the actual user ID from your auth context
+      const userId = 1; // Replace with actual user ID from auth context
+      
+      const response = await resumeService.createResumeFromForm(
+        data as ResumeFormData,
+        userId
+      );
+      
+      if (response.success) {
+        console.log("Resume created successfully:", response.data);
+        // Handle success - redirect or show success message
+      } else {
+        console.error("Failed to create resume:", response.message);
+        // Handle error
+      }
+    } catch (error) {
+      console.error("Error creating resume:", error);
+      // Handle error
+    }
   };
 
   return (
