@@ -1,7 +1,9 @@
-import { Box, Stack, Typography, IconButton, Grid, Checkbox, FormControlLabel, Card, CardHeader, CardContent, Accordion, AccordionSummary, AccordionDetails } from "@mui/material";
+import React, { useState } from "react";
+import { Box, Stack, Typography, IconButton, Grid, Checkbox, FormControlLabel, Card, CardHeader, CardContent, Accordion, AccordionSummary, AccordionDetails, Alert, CircularProgress } from "@mui/material";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { useNavigate } from "react-router-dom";
 import FormProvider from "../../../provider/FormProvider";
 import { RHFInput as Input } from "../../../components/Input";
 import Button from "../../../components/Button";
@@ -9,7 +11,8 @@ import { Add, Delete, ExpandMore } from "@mui/icons-material";
 import { useRef } from "react";
 import ResumePreview from "../../../components/ResumePreview2";
 import TemplateSelector from "../../../components/TemplateSelector";
-import { resumeService, type ResumeFormData } from "../../../lib/services";
+import { useCreateResumeFromForm } from "../../../lib/hooks/useResumes";
+import type { ResumeFormData } from "../../../lib/services";
 
 // Reusable nested schemas
 const workExperienceSchema = yup.object({
@@ -166,6 +169,12 @@ const defaultValues: ResumeFormValues = {
 };
 
 const CreateResume = () => {
+  const navigate = useNavigate();
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
+
   const methods = useForm<ResumeFormValues>({
     resolver: yupResolver(ResumeSchema),
     defaultValues,
@@ -181,32 +190,75 @@ const CreateResume = () => {
   const certArray = useFieldArray({ control: methods.control, name: "certifications" });
   const projArray = useFieldArray({ control: methods.control, name: "projects" });
 
+  // React Query mutation hook
+  const createResumeMutation = useCreateResumeFromForm();
+
   const onSubmit = async (data: ResumeFormValues) => {
     try {
       // Use the new service method to create resume from form data
       // Note: You'll need to get the actual user ID from your auth context
       const userId = 1; // Replace with actual user ID from auth context
       
-      const response = await resumeService.createResumeFromForm(
-        data as ResumeFormData,
+      await createResumeMutation.mutateAsync({
+        formData: data as ResumeFormData,
         userId
-      );
+      });
       
-      if (response.success) {
-        console.log("Resume created successfully:", response.data);
-        // Handle success - redirect or show success message
-      } else {
-        console.error("Failed to create resume:", response.message);
-        // Handle error
-      }
+      // Show success notification
+      setNotification({
+        type: 'success',
+        message: 'Resume created successfully!'
+      });
+
+      // Redirect to resume list page after a short delay
+      setTimeout(() => {
+        navigate('/dashboard/resume/list');
+      }, 1500);
+      
     } catch (error) {
       console.error("Error creating resume:", error);
-      // Handle error
+      // Show error notification
+      setNotification({
+        type: 'error',
+        message: 'Failed to create resume. Please try again.'
+      });
     }
   };
 
+  // Clear notification after 5 seconds
+  React.useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => {
+        setNotification(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
+
   return (
     <Box maxWidth={1200} mx="auto" mt={4} mb={8}>
+      {/* Notification */}
+      {notification && (
+        <Alert 
+          severity={notification.type} 
+          sx={{ mb: 3 }}
+          onClose={() => setNotification(null)}
+        >
+          {notification.message}
+        </Alert>
+      )}
+
+      {/* Mutation Error Alert */}
+      {createResumeMutation.error && (
+        <Alert 
+          severity="error" 
+          sx={{ mb: 3 }}
+          onClose={() => createResumeMutation.reset()}
+        >
+          {createResumeMutation.error.message || 'Failed to create resume'}
+        </Alert>
+      )}
+
       <Grid container spacing={4}>
         <Grid size={6}>
           {/* Existing form starts here */}
@@ -531,8 +583,14 @@ const CreateResume = () => {
                 </CardContent>
               </Card>
 
-              <Button type="submit" variant="contained" size="large">
-                Create Resume
+              <Button 
+                type="submit" 
+                variant="contained" 
+                size="large"
+                disabled={createResumeMutation.isPending}
+                startIcon={createResumeMutation.isPending ? <CircularProgress size={20} color="inherit" /> : undefined}
+              >
+                {createResumeMutation.isPending ? 'Creating Resume...' : 'Create Resume'}
               </Button>
             </Stack>
           </FormProvider>

@@ -236,8 +236,7 @@ const ListResume = () => {
 
       {/* Resume List */}
       {resumes.length === 0 ? (
-        <Card>
-          <CardContent sx={{ textAlign: 'center', py: 8 }}>
+        <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" height="100%">
             <Typography variant="h6" color="text.secondary" gutterBottom>
               No resumes found
             </Typography>
@@ -256,8 +255,7 @@ const ListResume = () => {
                 Create Your First Resume
               </Button>
             )}
-          </CardContent>
-        </Card>
+        </Box>
       ) : (
         <Grid container spacing={3}>
           {resumes.map((resume) => (
