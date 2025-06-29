@@ -202,7 +202,7 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
       )}
 
       <Grid container spacing={4}>
-        <Grid size={6}>
+        <Grid size={5}>
           {/* Existing form starts here */}
           <FormProvider methods={methods} onSubmit={onSubmit}>
             <Stack spacing={3}>
@@ -211,14 +211,14 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
                 <CardHeader title="Basic Info" />
                 <CardContent>
                   <Grid container spacing={2}>
-                    <Grid size={6}><Input type="text" name="title" label="Resume Title" /></Grid>
-                    <Grid size={6}><Input name="fullName" label="Full Name" type="text" /></Grid>
-                    <Grid size={6}><Input name="email" label="Email" type="email" /></Grid>
-                    <Grid size={6}><Input name="phone" label="Phone" type="text" /></Grid>
-                    <Grid size={6}><Input name="address" label="Address" type="text" /></Grid>
-                    <Grid size={6}><Input name="website" label="Website" type="text" /></Grid>
-                    <Grid size={6}><Input name="linkedin" label="LinkedIn" type="text" /></Grid>
-                    <Grid size={6}><Input name="github" label="GitHub" type="text" /></Grid>
+                    <Grid size={12}><Input type="text" name="title" label="Resume Title" /></Grid>
+                    <Grid size={12}><Input name="fullName" label="Full Name" type="text" /></Grid>
+                    <Grid size={12}><Input name="email" label="Email" type="email" /></Grid>
+                    <Grid size={12}><Input name="phone" label="Phone" type="text" /></Grid>
+                    <Grid size={12}><Input name="address" label="Address" type="text" /></Grid>
+                    <Grid size={12}><Input name="website" label="Website" type="text" /></Grid>
+                    <Grid size={12}><Input name="linkedin" label="LinkedIn" type="text" /></Grid>
+                    <Grid size={12}><Input name="github" label="GitHub" type="text" /></Grid>
                     <Grid size={12}><Input name="summary" label="Professional Summary" type="text" multiline rows={2} /></Grid>
                     <Grid size={12}><Input name="objective" label="Objective" type="text" multiline rows={2} /></Grid>
                   </Grid>
@@ -353,10 +353,10 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
                         </AccordionSummary>
                         <AccordionDetails>
                           <Grid container spacing={2} alignItems="center">
-                            <Grid size={4}><Input name={`skills.${idx}.name`} label="Skill Name" type="text" /></Grid>
-                            <Grid size={4}><Input name={`skills.${idx}.category`} label="Category" type="text" /></Grid>
-                            <Grid size={2}><Input name={`skills.${idx}.level`} label="Level (1-5)" type="number" inputProps={{ min: 1, max: 5 }} /></Grid>
-                            <Grid size={2}><Input name={`skills.${idx}.yearsExp`} label="Years Exp" type="number" /></Grid>
+                            <Grid size={12}><Input name={`skills.${idx}.name`} label="Skill Name" type="text" /></Grid>
+                            <Grid size={12}><Input name={`skills.${idx}.category`} label="Category" type="text" /></Grid>
+                            <Grid size={6}><Input name={`skills.${idx}.level`} label="Level (1-5)" type="number" inputProps={{ min: 1, max: 5 }} /></Grid>
+                            <Grid size={6}><Input name={`skills.${idx}.yearsExp`} label="Years Exp" type="number" /></Grid>
                           </Grid>
                         </AccordionDetails>
                       </Accordion>
@@ -437,12 +437,12 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
                         </AccordionSummary>
                         <AccordionDetails>
                           <Grid container spacing={2} alignItems="center">
-                            <Grid size={4}><Input name={`certifications.${idx}.name`} label="Name" type="text" /></Grid>
-                            <Grid size={4}><Input name={`certifications.${idx}.issuer`} label="Issuer" type="text" /></Grid>
-                            <Grid size={2}><Input name={`certifications.${idx}.issueDate`} label="Issue Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
-                            <Grid size={2}><Input name={`certifications.${idx}.expiryDate`} label="Expiry Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
-                            <Grid size={4}><Input name={`certifications.${idx}.credentialID`} label="Credential ID" type="text" /></Grid>
-                            <Grid size={4}><Input name={`certifications.${idx}.url`} label="URL" type="text" /></Grid>
+                            <Grid size={12}><Input name={`certifications.${idx}.name`} label="Name" type="text" /></Grid>
+                            <Grid size={12}><Input name={`certifications.${idx}.issuer`} label="Issuer" type="text" /></Grid>
+                            <Grid size={6}><Input name={`certifications.${idx}.issueDate`} label="Issue Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
+                            <Grid size={6}><Input name={`certifications.${idx}.expiryDate`} label="Expiry Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
+                            <Grid size={12}><Input name={`certifications.${idx}.credentialID`} label="Credential ID" type="text" /></Grid>
+                            <Grid size={12}><Input name={`certifications.${idx}.url`} label="URL" type="text" /></Grid>
                           </Grid>
                         </AccordionDetails>
                       </Accordion>
@@ -485,13 +485,13 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
                         </AccordionSummary>
                         <AccordionDetails>
                           <Grid container spacing={2} alignItems="center">
-                            <Grid size={4}><Input name={`projects.${idx}.name`} label="Project Name" type="text" /></Grid>
-                            <Grid size={4}><Input name={`projects.${idx}.description`} label="Description" type="text" /></Grid>
-                            <Grid size={4}><Input name={`projects.${idx}.technologies`} label="Technologies (comma separated)" type="text" /></Grid>
-                            <Grid size={3}><Input name={`projects.${idx}.startDate`} label="Start Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
-                            <Grid size={3}><Input name={`projects.${idx}.endDate`} label="End Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
-                            <Grid size={3}><Input name={`projects.${idx}.url`} label="URL" type="text" /></Grid>
-                            <Grid size={3}><Input name={`projects.${idx}.github`} label="GitHub" type="text" /></Grid>
+                            <Grid size={12}><Input name={`projects.${idx}.name`} label="Project Name" type="text" /></Grid>
+                            <Grid size={12}><Input name={`projects.${idx}.description`} label="Description" type="text" /></Grid>
+                            <Grid size={12}><Input name={`projects.${idx}.technologies`} label="Technologies (comma separated)" type="text" /></Grid>
+                            <Grid size={6}><Input name={`projects.${idx}.startDate`} label="Start Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
+                            <Grid size={6}><Input name={`projects.${idx}.endDate`} label="End Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
+                            <Grid size={12}><Input name={`projects.${idx}.url`} label="URL" type="text" /></Grid>
+                            <Grid size={12}><Input name={`projects.${idx}.github`} label="GitHub" type="text" /></Grid>
                           </Grid>
                         </AccordionDetails>
                       </Accordion>
@@ -516,9 +516,9 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
                 <CardHeader title="Other Sections" />
                 <CardContent>
                   <Grid container spacing={2}>
-                    <Grid size={4}><Input name="awards" label="Awards" type="text" multiline rows={2} /></Grid>
-                    <Grid size={4}><Input name="interests" label="Interests" type="text" multiline rows={2} /></Grid>
-                    <Grid size={4}><Input name="references" label="References" type="text" multiline rows={2} /></Grid>
+                    <Grid size={12}><Input name="awards" label="Awards" type="text" multiline rows={2} /></Grid>
+                    <Grid size={12}><Input name="interests" label="Interests" type="text" multiline rows={2} /></Grid>
+                    <Grid size={12}><Input name="references" label="References" type="text" multiline rows={2} /></Grid>
                     <Grid size={6}><Input name="template" label="Template" type="text" /></Grid>
                     <Grid size={6}><Input name="theme" label="Theme" type="text" /></Grid>
                   </Grid>
@@ -541,7 +541,7 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
             Download PDF
           </Button>
         </Grid>
-        <Grid size={6}>
+        <Grid size={7}>
           <Stack marginBottom={2}>
             <Typography variant="h6" gutterBottom>
               Select a Template

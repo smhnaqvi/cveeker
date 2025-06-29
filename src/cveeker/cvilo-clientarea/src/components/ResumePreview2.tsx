@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Typography, Divider, Stack, Chip } from "@mui/material";
-import type { ResumeFormValues } from "../pages/dashboard/resume/CreateResume";
+import type { ResumeFormValues } from "../pages/dashboard/resume/components/ResumeForm";
 
 type Props = {
   data: ResumeFormValues;
