@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/smhnaqvi/cvilo/models"
+	"github.com/smhnaqvi/cvilo/utils"
 )
 
 type ResumeController struct{}
@@ -43,8 +44,11 @@ func (rc *ResumeController) CreateResume(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
-		"message": "Resume created successfully",
-		"resume":  resume,
+		"success": true,
+		"data": gin.H{
+			"message": "Resume created successfully",
+			"resume":  resume,
+		},
 	})
 }
 
@@ -110,7 +114,7 @@ func (rc *ResumeController) GetAllResumes(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	utils.Success(c, "Resumes retrieved successfully", gin.H{
 		"resumes": resumes,
 		"pagination": gin.H{
 			"current_page": page,
@@ -119,6 +123,16 @@ func (rc *ResumeController) GetAllResumes(c *gin.Context) {
 			"total_pages":  (total + int64(limit) - 1) / int64(limit),
 		},
 	})
+
+	// c.JSON(http.StatusOK, gin.H{
+	// 	"resumes": resumes,
+	// 	"pagination": gin.H{
+	// 		"current_page": page,
+	// 		"per_page":     limit,
+	// 		"total":        total,
+	// 		"total_pages":  (total + int64(limit) - 1) / int64(limit),
+	// 	},
+	// })
 }
 
 // UpdateResume updates an existing resume
