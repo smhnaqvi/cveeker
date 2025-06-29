@@ -146,16 +146,6 @@ export const useUpdateResumeFromForm = () => {
   });
 };
 
-// Hook to get resume with parsed form data
-export const useResumeFormData = (id: number) => {
-  return useQuery({
-    queryKey: [...resumeKeys.detail(id), 'formData'],
-    queryFn: () => resumeService.getResumeFormData(id),
-    enabled: !!id,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-};
-
 // Hook to search resumes
 export const useSearchResumes = (query: string, params?: ResumeSearchParams) => {
   return useQuery({

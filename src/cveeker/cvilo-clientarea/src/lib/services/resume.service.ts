@@ -41,8 +41,8 @@ export class ResumeService extends BaseService {
    * Get a single resume by ID
    * GET /api/resumes/:id
    */
-  async getResume(id: number): Promise<ApiResponse<Resume>> {
-    return this.get<Resume>(`/${id}`);
+  async getResume(id: number): Promise<ApiResponse<ResumeResponse>> {
+    return this.get<ResumeResponse>(`/${id}`);
   }
 
   /**
@@ -182,55 +182,6 @@ export class ResumeService extends BaseService {
       theme: formData.theme
     };
     return this.updateResume(id, updateData);
-  }
-
-  /**
-   * Get resume with parsed form data
-   * Retrieves resume and parses JSON strings back to form data structure
-   */
-  async getResumeFormData(id: number): Promise<ApiResponse<Resume & { parsedFormData?: ResumeFormData }>> {
-    const response = await this.getResume(id);
-    if (response.code === 200 && response.data) {
-      try {
-        // Parse JSON strings back to form data
-        const parsedFormData: ResumeFormData = {
-          title: response.data.title,
-          isActive: response.data.is_active,
-          fullName: response.data.full_name,
-          email: response.data.email,
-          phone: response.data.phone,
-          address: response.data.address,
-          website: response.data.website,
-          linkedin: response.data.linkedin,
-          github: response.data.github,
-          summary: response.data.summary,
-          objective: response.data.objective,
-          experience: JSON.parse(response.data.experience || '[]'),
-          education: JSON.parse(response.data.education || '[]'),
-          skills: JSON.parse(response.data.skills || '[]'),
-          languages: JSON.parse(response.data.languages || '[]'),
-          certifications: JSON.parse(response.data.certifications || '[]'),
-          projects: JSON.parse(response.data.projects || '[]'),
-          awards: response.data.awards,
-          interests: response.data.interests,
-          references: response.data.references,
-          template: response.data.template,
-          theme: response.data.theme
-        };
-
-        return {
-          ...response,
-          data: {
-            ...response.data,
-            parsedFormData
-          }
-        };
-      } catch (error) {
-        console.error('Error parsing resume form data:', error);
-        return response;
-      }
-    }
-    return response;
   }
 
   /**

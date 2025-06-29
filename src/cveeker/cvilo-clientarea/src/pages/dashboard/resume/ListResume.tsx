@@ -71,11 +71,11 @@ const ListResume = () => {
 
   // Handle resume actions
   const handleEdit = (resume: Resume) => {
-    navigate(`/dashboard/resume/edit/${resume.id}`);
+    navigate(`/dashboard/resume/${resume.id}/edit`);
   };
 
   const handleView = (resume: Resume) => {
-    navigate(`/dashboard/resume/preview/${resume.id}`);
+    navigate(`/dashboard/resume/${resume.id}/preview`);
   };
 
   const handleClone = async (resume: Resume) => {
