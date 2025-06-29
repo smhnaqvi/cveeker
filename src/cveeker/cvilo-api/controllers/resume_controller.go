@@ -67,7 +67,9 @@ func (rc *ResumeController) GetResume(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, resume)
+	utils.Success(c, "Resumes retrieved successfully", gin.H{
+		"resume": resume,
+	})
 }
 
 // GetResumesByUser retrieves all resumes for a specific user
@@ -123,16 +125,6 @@ func (rc *ResumeController) GetAllResumes(c *gin.Context) {
 			"total_pages":  (total + int64(limit) - 1) / int64(limit),
 		},
 	})
-
-	// c.JSON(http.StatusOK, gin.H{
-	// 	"resumes": resumes,
-	// 	"pagination": gin.H{
-	// 		"current_page": page,
-	// 		"per_page":     limit,
-	// 		"total":        total,
-	// 		"total_pages":  (total + int64(limit) - 1) / int64(limit),
-	// 	},
-	// })
 }
 
 // UpdateResume updates an existing resume
