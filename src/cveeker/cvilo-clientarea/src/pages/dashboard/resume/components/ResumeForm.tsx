@@ -10,7 +10,7 @@ import Button from "../../../../components/Button";
 import { Add, Delete, ExpandMore } from "@mui/icons-material";
 import { useRef } from "react";
 import ResumePreview from "../../../../components/ResumePreview2";
-import TemplateSelector from "../../../../components/TemplateSelector";
+import ThemeSelector from "../../../../components/ThemeSelector";
 import { useCreateResumeFromForm } from "../../../../lib/hooks/useResumes";
 import type { ResumeFormData } from "../../../../lib/services";
 import { useUpdateResumeFromForm } from "../../../../lib/hooks/useResumes";
@@ -549,11 +549,12 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
             <Controller
               name="theme"
               control={methods.control}
-              defaultValue={watchAll.theme || 'light'}
+              defaultValue={watchAll.theme || 'modern-blue'}
               render={({ field }) => (
-                <TemplateSelector
-                  selected={field.value}
-                  onSelect={field.onChange}
+                <ThemeSelector
+                  selectedTheme={field.value}
+                  onSelectTheme={field.onChange}
+                  sampleData={watchAll}
                 />
               )}
             />
@@ -562,7 +563,7 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
             sx={{
               position: 'sticky',
               maxHeight: 'calc(100vh - 48px)',
-              top: '24px',
+              top: '100px',
               bottom: '24px',
               overflowY: 'auto',
             }}
