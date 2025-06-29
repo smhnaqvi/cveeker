@@ -16,4 +16,7 @@ export { UserService } from './user.service';
 export { ResumeService } from './resume.service';
 
 // Re-export axios configuration
-export { apiService, default as api } from '../axios'; 
+export { apiService, default as api } from '../axios';
+
+// Export React Query hooks
+export * from '../hooks'; 

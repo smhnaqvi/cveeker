@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Box, 
   Card, 
@@ -31,67 +31,41 @@ import {
   Search as SearchIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { resumeService, type Resume } from '../../../lib/services';
+import { useResumes, useDeleteResume, useToggleResumeStatus, useCloneResume } from '../../../lib/hooks/useResumes';
+import type { Resume } from '../../../lib/services';
 
 const ListResume = () => {
   const navigate = useNavigate();
-  const [resumes, setResumes] = useState<Resume[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [pagination, setPagination] = useState({
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showActiveOnly, setShowActiveOnly] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [resumeToDelete, setResumeToDelete] = useState<Resume | null>(null);
+
+  // React Query hooks
+  const { data: response, isLoading, error, refetch } = useResumes({
+    page: currentPage,
+    limit: 10,
+    search: searchTerm || undefined,
+    is_active: showActiveOnly ? true : undefined
+  });
+    
+  const deleteResumeMutation = useDeleteResume();
+  const toggleStatusMutation = useToggleResumeStatus();
+    const cloneResumeMutation = useCloneResume();
+
+
+  const resumes = response?.data?.resumes || [];
+  const pagination = response?.data?.pagination || {
     current_page: 1,
     per_page: 10,
     total: 0,
     total_pages: 0
-  });
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showActiveOnly, setShowActiveOnly] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [resumeToDelete, setResumeToDelete] = useState<Resume | null>(null);
-
-  // Fetch resumes
-  const fetchResumes = async (page = 1) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await resumeService.getAllResumes({
-        page,
-        limit: 10,
-        search: searchTerm || undefined,
-        is_active: showActiveOnly ? true : undefined
-      });
-
-      if (response.success && response.data) {
-        setResumes(response.data.resumes);
-        setPagination(response.data.pagination);
-      } else {
-        setError(response.message || 'Failed to fetch resumes');
-      }
-    } catch (err) {
-      setError('Failed to fetch resumes');
-      console.error('Error fetching resumes:', err);
-    } finally {
-      setLoading(false);
-    }
   };
-
-  useEffect(() => {
-    fetchResumes();
-  }, []);
-
-  useEffect(() => {
-    // Debounce search
-    const timeoutId = setTimeout(() => {
-      fetchResumes(1);
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
-  }, [searchTerm, showActiveOnly]);
 
   // Handle page change
   const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
-    fetchResumes(page);
+    setCurrentPage(page);
   };
 
   // Handle resume actions
@@ -105,34 +79,16 @@ const ListResume = () => {
 
   const handleClone = async (resume: Resume) => {
     try {
-      const response = await resumeService.cloneResume(resume.id);
-      if (response.success) {
-        // Refresh the list
-        fetchResumes(pagination.current_page);
-      } else {
-        setError(response.message || 'Failed to clone resume');
-      }
+      await cloneResumeMutation.mutateAsync(resume.id);
     } catch (err) {
-      setError('Failed to clone resume');
       console.error('Error cloning resume:', err);
     }
   };
 
   const handleToggleStatus = async (resume: Resume) => {
     try {
-      const response = await resumeService.toggleResumeStatus(resume.id);
-      if (response.success) {
-        // Update the local state
-        setResumes(prev => prev.map(r => 
-          r.id === resume.id 
-            ? { ...r, is_active: response.data?.is_active || !r.is_active }
-            : r
-        ));
-      } else {
-        setError(response.message || 'Failed to update resume status');
-      }
+      await toggleStatusMutation.mutateAsync(resume.id);
     } catch (err) {
-      setError('Failed to update resume status');
       console.error('Error updating resume status:', err);
     }
   };
@@ -141,17 +97,10 @@ const ListResume = () => {
     if (!resumeToDelete) return;
 
     try {
-      const response = await resumeService.deleteResume(resumeToDelete.id);
-      if (response.success) {
-        // Remove from local state
-        setResumes(prev => prev.filter(r => r.id !== resumeToDelete.id));
-        setDeleteDialogOpen(false);
-        setResumeToDelete(null);
-      } else {
-        setError(response.message || 'Failed to delete resume');
-      }
+      await deleteResumeMutation.mutateAsync(resumeToDelete.id);
+      setDeleteDialogOpen(false);
+      setResumeToDelete(null);
     } catch (err) {
-      setError('Failed to delete resume');
       console.error('Error deleting resume:', err);
     }
   };
@@ -196,7 +145,7 @@ const ListResume = () => {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
         <CircularProgress />
@@ -222,8 +171,27 @@ const ListResume = () => {
 
       {/* Error Alert */}
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
-          {error}
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => refetch()}>
+          {error.message || 'Failed to fetch resumes'}
+        </Alert>
+      )}
+
+      {/* Mutation Error Alerts */}
+      {deleteResumeMutation.error && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => deleteResumeMutation.reset()}>
+          {deleteResumeMutation.error.message || 'Failed to delete resume'}
+        </Alert>
+      )}
+
+      {toggleStatusMutation.error && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => toggleStatusMutation.reset()}>
+          {toggleStatusMutation.error.message || 'Failed to update resume status'}
+        </Alert>
+      )}
+
+      {cloneResumeMutation.error && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => cloneResumeMutation.reset()}>
+          {cloneResumeMutation.error.message || 'Failed to clone resume'}
         </Alert>
       )}
 
@@ -392,6 +360,7 @@ const ListResume = () => {
                         size="small"
                         onClick={() => handleClone(resume)}
                         title="Clone"
+                        disabled={cloneResumeMutation.isPending}
                       >
                         <CloneIcon />
                       </IconButton>
@@ -401,6 +370,7 @@ const ListResume = () => {
                         size="small"
                         onClick={() => handleToggleStatus(resume)}
                         title={resume.is_active ? 'Deactivate' : 'Activate'}
+                        disabled={toggleStatusMutation.isPending}
                       >
                         <Switch
                           size="small"
@@ -413,6 +383,7 @@ const ListResume = () => {
                         color="error"
                         onClick={() => openDeleteDialog(resume)}
                         title="Delete"
+                        disabled={deleteResumeMutation.isPending}
                       >
                         <DeleteIcon />
                       </IconButton>
@@ -446,9 +417,19 @@ const ListResume = () => {
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleDelete} color="error" variant="contained">
-            Delete
+          <Button 
+            onClick={() => setDeleteDialogOpen(false)}
+            disabled={deleteResumeMutation.isPending}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleDelete} 
+            color="error" 
+            variant="contained"
+            disabled={deleteResumeMutation.isPending}
+          >
+            {deleteResumeMutation.isPending ? 'Deleting...' : 'Delete'}
           </Button>
         </DialogActions>
       </Dialog>

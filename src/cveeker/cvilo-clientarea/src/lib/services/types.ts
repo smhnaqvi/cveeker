@@ -1,9 +1,11 @@
 // Common API response types
 export interface ApiResponse<T = unknown> {
-  success: boolean;
+  code: number;
   data?: T;
   message?: string;
-  error?: string;
+  path?: string;
+  status?: string;
+  timestamp?: string;
 }
 
 export interface PaginatedResponse<T = unknown> {

@@ -190,7 +190,7 @@ export class ResumeService extends BaseService {
    */
   async getResumeFormData(id: number): Promise<ApiResponse<Resume & { parsedFormData?: ResumeFormData }>> {
     const response = await this.getResume(id);
-    if (response.success && response.data) {
+    if (response.code === 200 && response.data) {
       try {
         // Parse JSON strings back to form data
         const parsedFormData: ResumeFormData = {
