@@ -33,6 +33,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useResumes, useDeleteResume, useToggleResumeStatus, useCloneResume } from '../../../lib/hooks/useResumes';
 import type { Resume } from '../../../lib/services';
+import PageContent from '../../../components/Page';
 
 const ListResume = () => {
   const navigate = useNavigate();
@@ -154,7 +155,7 @@ const ListResume = () => {
   }
 
   return (
-    <Box maxWidth={1200} mx="auto" mt={4} mb={8}>
+    <PageContent>
       {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
         <Typography variant="h4" component="h1">
@@ -431,7 +432,7 @@ const ListResume = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </PageContent>
   );
 };
 

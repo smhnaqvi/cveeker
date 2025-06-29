@@ -16,7 +16,7 @@ import {
   Download as DownloadIcon,
   TrendingUp as TrendingUpIcon,
 } from '@mui/icons-material'
-import Layout from '../../components/Layout'
+import PageContent from '../../components/Page'
 
 const stats = [
     {
@@ -75,183 +75,181 @@ const recentResumes = [
 
 export default function Dashboard() {
   return (
-    <Layout>
-      <Box>
-        {/* Welcome Section */}
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
-            Welcome back, John! 👋
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            Here's an overview of your resume performance and recent activity.
-          </Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            sx={{ borderRadius: 2, textTransform: 'none' }}
-          >
-            Create New Resume
-          </Button>
-        </Box>
+    <PageContent>
+      {/* Welcome Section */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
+          Welcome back, John! 👋
+        </Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+          Here's an overview of your resume performance and recent activity.
+        </Typography>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          sx={{ borderRadius: 2, textTransform: 'none' }}
+        >
+          Create New Resume
+        </Button>
+      </Box>
 
-        {/* Stats Cards */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          {stats.map((stat, index) => (
-            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
-              <Card sx={{ height: '100%' }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Avatar
-                      sx={{
-                        bgcolor: stat.color,
-                        mr: 2,
-                        width: 48,
-                        height: 48,
-                      }}
-                    >
-                      {stat.icon}
-                    </Avatar>
-                    <Box>
-                      <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                        {stat.value}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {stat.title}
-                      </Typography>
-                    </Box>
-                  </Box>
-                  <Typography variant="caption" color="success.main">
-                    {stat.change}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-
-        <Grid container spacing={3}>
-          {/* Recent Resumes */}
-          <Grid size={{ xs: 12, md: 8 }}>
-            <Card>
+      {/* Stats Cards */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        {stats.map((stat, index) => (
+          <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
+            <Card sx={{ height: '100%' }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-                  Recent Resumes
-                </Typography>
-                <Box sx={{ mt: 2 }}>
-                  {recentResumes.map((resume) => (
-                    <Box
-                      key={resume.id}
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        py: 2,
-                        borderBottom: '1px solid',
-                        borderColor: 'divider',
-                        '&:last-child': { borderBottom: 'none' },
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Avatar sx={{ mr: 2, bgcolor: 'primary.main' }}>
-                          <DescriptionIcon />
-                        </Avatar>
-                        <Box>
-                          <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
-                            {resume.title}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Last modified {resume.lastModified}
-                          </Typography>
-                        </Box>
-                      </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Typography variant="caption" color="text.secondary">
-                          {resume.views} views
-                        </Typography>
-                        <Chip
-                          label={resume.status}
-                          size="small"
-                          color={resume.status === 'Active' ? 'success' : 'default'}
-                          variant="outlined"
-                        />
-                      </Box>
-                    </Box>
-                  ))}
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <Avatar
+                    sx={{
+                      bgcolor: stat.color,
+                      mr: 2,
+                      width: 48,
+                      height: 48,
+                    }}
+                  >
+                    {stat.icon}
+                  </Avatar>
+                  <Box>
+                    <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                      {stat.value}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {stat.title}
+                    </Typography>
+                  </Box>
                 </Box>
-                <Button
-                  variant="text"
-                  sx={{ mt: 2, textTransform: 'none' }}
-                  fullWidth
-                >
-                  View All Resumes
-                </Button>
+                <Typography variant="caption" color="success.main">
+                  {stat.change}
+                </Typography>
               </CardContent>
             </Card>
           </Grid>
+        ))}
+      </Grid>
 
-          {/* Quick Actions & Profile Completion */}
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              {/* Profile Completion */}
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-                    Profile Completion
-                  </Typography>
-                  <Box sx={{ mt: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2">Complete your profile</Typography>
-                      <Typography variant="body2" color="primary">
-                        85%
-                      </Typography>
+      <Grid container spacing={3}>
+        {/* Recent Resumes */}
+        <Grid size={{ xs: 12, md: 8 }}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
+                Recent Resumes
+              </Typography>
+              <Box sx={{ mt: 2 }}>
+                {recentResumes.map((resume) => (
+                  <Box
+                    key={resume.id}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      py: 2,
+                      borderBottom: '1px solid',
+                      borderColor: 'divider',
+                      '&:last-child': { borderBottom: 'none' },
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Avatar sx={{ mr: 2, bgcolor: 'primary.main' }}>
+                        <DescriptionIcon />
+                      </Avatar>
+                      <Box>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+                          {resume.title}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Last modified {resume.lastModified}
+                        </Typography>
+                      </Box>
                     </Box>
-                    <LinearProgress
-                      variant="determinate"
-                      value={85}
-                      sx={{ height: 8, borderRadius: 4 }}
-                    />
-                    <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                      Add your skills and experience to improve your profile visibility
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Typography variant="caption" color="text.secondary">
+                        {resume.views} views
+                      </Typography>
+                      <Chip
+                        label={resume.status}
+                        size="small"
+                        color={resume.status === 'Active' ? 'success' : 'default'}
+                        variant="outlined"
+                      />
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+              <Button
+                variant="text"
+                sx={{ mt: 2, textTransform: 'none' }}
+                fullWidth
+              >
+                View All Resumes
+              </Button>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Quick Actions & Profile Completion */}
+        <Grid size={{ xs: 12, md: 4 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {/* Profile Completion */}
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
+                  Profile Completion
+                </Typography>
+                <Box sx={{ mt: 2 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant="body2">Complete your profile</Typography>
+                    <Typography variant="body2" color="primary">
+                      85%
                     </Typography>
                   </Box>
-                </CardContent>
-              </Card>
-
-              {/* Quick Actions */}
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-                    Quick Actions
+                  <LinearProgress
+                    variant="determinate"
+                    value={85}
+                    sx={{ height: 8, borderRadius: 4 }}
+                  />
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                    Add your skills and experience to improve your profile visibility
                   </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 2 }}>
-                    <Button
-                      variant="outlined"
-                      fullWidth
-                      sx={{ textTransform: 'none', justifyContent: 'flex-start' }}
-                    >
-                      Download Latest Resume
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      fullWidth
-                      sx={{ textTransform: 'none', justifyContent: 'flex-start' }}
-                    >
-                      Share Resume Link
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      fullWidth
-                      sx={{ textTransform: 'none', justifyContent: 'flex-start' }}
-                    >
-                      View Analytics
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Box>
-          </Grid>
+                </Box>
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
+                  Quick Actions
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 2 }}>
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    sx={{ textTransform: 'none', justifyContent: 'flex-start' }}
+                  >
+                    Download Latest Resume
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    sx={{ textTransform: 'none', justifyContent: 'flex-start' }}
+                  >
+                    Share Resume Link
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    sx={{ textTransform: 'none', justifyContent: 'flex-start' }}
+                  >
+                    View Analytics
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
         </Grid>
-      </Box>
-    </Layout>
+      </Grid>
+    </PageContent>
   )
 } 

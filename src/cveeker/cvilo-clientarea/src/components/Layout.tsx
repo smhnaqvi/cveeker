@@ -28,7 +28,7 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom'
 import Logo from './Logo'
 
-const drawerWidth = 280
+const drawerWidth = 250
 
 interface LayoutProps {
   children: React.ReactNode
@@ -61,8 +61,8 @@ export default function Layout({ children }: LayoutProps) {
 
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-    { text: 'My Resumes', icon: <DescriptionIcon />, path: '/resumes' },
-    { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
+    { text: 'My Resumes', icon: <DescriptionIcon />, path: '/dashboard/resume/list' },
+    { text: 'Settings', icon: <SettingsIcon />, path: '/dashboard/settings' },
   ]
 
   const drawer = (
@@ -73,11 +73,12 @@ export default function Layout({ children }: LayoutProps) {
       <Divider />
       <List>
         {menuItems.map((item) => (
-          <ListItem key={item.text} disablePadding>
+          <ListItem key={item.text} sx={{ paddingX: 1, paddingY: 0}}>
             <ListItemButton
               selected={location.pathname === item.path}
               onClick={() => navigate(item.path)}
               sx={{
+                borderRadius: 1,
                 '&.Mui-selected': {
                   backgroundColor: 'primary.light',
                   color: 'primary.contrastText',
