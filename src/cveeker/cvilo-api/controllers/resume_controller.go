@@ -2,18 +2,25 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/smhnaqvi/cvilo/models"
+	"github.com/smhnaqvi/cvilo/services"
 	"github.com/smhnaqvi/cvilo/utils"
 )
 
-type ResumeController struct{}
+type ResumeController struct {
+	pdfService *services.PDFService
+}
 
 func NewResumeController() *ResumeController {
-	return &ResumeController{}
+	return &ResumeController{
+		pdfService: services.NewPDFService(),
+	}
 }
 
 // CreateResume creates a new resume for a user
@@ -308,4 +315,42 @@ func (rc *ResumeController) ParseSkills(c *gin.Context) {
 		"parsed_data": string(jsonData),
 		"count":       len(skills),
 	})
+}
+
+// DownloadResumePDF generates a PDF from the resume preview and returns it for download
+func (rc *ResumeController) DownloadResumePDF(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid resume ID"})
+		return
+	}
+
+	// Get the resume to verify it exists
+	var resume models.ResumeModel
+	if err := resume.GetResumeByID(uint(id)); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Resume not found"})
+		return
+	}
+
+	// Construct the preview URL with print mode
+
+	previewURL := fmt.Sprintf("http://localhost:3009/dashboard/resume/%d/preview?print=true", id)
+
+	log.Println("Preview URL:", previewURL)
+
+	// Generate PDF from the preview URL with complete page loading detection
+	pdfBuffer, err := rc.pdfService.GeneratePDFFromURL(previewURL, fmt.Sprintf("resume_%d.pdf", id))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to generate PDF: %v", err)})
+		return
+	}
+
+	// Set response headers for file download
+	filename := fmt.Sprintf("resume_%s.pdf", resume.Title)
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
+	c.Header("Content-Type", "application/pdf")
+	c.Header("Content-Length", strconv.Itoa(len(pdfBuffer)))
+
+	// Return the PDF buffer
+	c.Data(http.StatusOK, "application/pdf", pdfBuffer)
 }

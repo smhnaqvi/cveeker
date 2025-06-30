@@ -95,6 +95,7 @@ func main() {
 			resumes.DELETE("/:id", resumeController.DeleteResume)                  // Delete resume
 			resumes.POST("/:id/clone", resumeController.CloneResume)               // Clone resume
 			resumes.PUT("/:id/toggle-status", resumeController.ToggleResumeStatus) // Toggle active status
+			resumes.GET("/:id/download-pdf", resumeController.DownloadResumePDF)   // Download resume as PDF
 		}
 
 		// Helper routes for parsing complex JSON fields
@@ -146,6 +147,7 @@ func main() {
 					"DELETE /resumes/:id":            "Delete resume",
 					"POST /resumes/:id/clone":        "Clone resume",
 					"PUT /resumes/:id/toggle-status": "Toggle resume active status",
+					"GET /resumes/:id/download-pdf":  "Download resume as PDF",
 				},
 				"helpers": gin.H{
 					"POST /helpers/parse-experience": "Parse experience data to JSON",
