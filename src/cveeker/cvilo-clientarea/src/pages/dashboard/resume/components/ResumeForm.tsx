@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import FormProvider from "../../../../provider/FormProvider";
 import { RHFInput as Input } from "../../../../components/Input";
 import Button from "../../../../components/Button";
-import { Add, Delete, ExpandMore } from "@mui/icons-material";
+import { Add, Delete, ExpandMore, Print } from "@mui/icons-material";
 import { useRef } from "react";
 import ResumePreview from "../../../../components/ResumePreview2";
 import ThemeSelector from "../../../../components/ThemeSelector";
@@ -528,7 +528,7 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
               <LoadingButton
                 type="submit" 
                 variant="contained" 
-                              size="large"
+                size="large"
                 loading={createResumeMutation.isPending || updateResumeMutation.isPending}
                 disabled={createResumeMutation.isPending || updateResumeMutation.isPending}
                 startIcon={createResumeMutation.isPending || updateResumeMutation.isPending ? <CircularProgress size={20} color="inherit" /> : undefined}
@@ -537,8 +537,12 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
               </LoadingButton>
             </Stack>
           </FormProvider>
-          <Button variant="contained" sx={{ mt: 2 }}>
-            Download PDF
+          <Button 
+            variant="outlined" 
+            sx={{ mt: 2 }}
+            startIcon={<Print />}
+          >
+            Print Resume
           </Button>
         </Grid>
         <Grid size={7}>
@@ -568,10 +572,13 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
               overflowY: 'auto',
             }}
           >
-            <ResumePreview
-              data={watchAll}
-              theme={watchAll.theme}
-            />
+            <div id="resume-preview">
+              <ResumePreview
+                data={watchAll}
+                theme={watchAll.theme}
+                printMode={false}
+              />
+            </div>
           </Card>
         </Grid>
       </Grid>
