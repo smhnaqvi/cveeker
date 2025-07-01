@@ -14,6 +14,30 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
   const themeConfig: ResumeTheme = getThemeById(theme) || getDefaultTheme();
   const styles = themeConfig.styles;
 
+  // Add print mode effect to body
+  React.useEffect(() => {
+    if (printMode) {
+      const style = document.createElement("style");
+      style.innerHTML = `
+        @page {
+          size: A4;
+          margin: 0;
+        }
+
+        @media print {
+          html, body {
+            background-color: ${styles.container.backgroundColor} !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  }, [printMode]);
+
   return (
     <Box
       data-theme={theme}
@@ -22,7 +46,7 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
         background: styles.container.backgroundColor,
         color: styles.container.color,
         fontFamily: styles.container.fontFamily,
-        padding: printMode ? '20mm' : styles.container.padding,
+        padding: styles.container.padding,
         borderRadius: printMode ? '0px' : styles.container.borderRadius,
         boxShadow: printMode ? 'none' : styles.container.boxShadow,
         fontSize: styles.content.fontSize,
@@ -30,15 +54,14 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
         minHeight: printMode ? '297mm' : '100%', // A4 height
         width: printMode ? '210mm' : '100%', // A4 width
         margin: printMode ? '0 auto' : '0',
-        pageBreakAfter: printMode ? 'always' : 'auto',
+        // pageBreakAfter removed to prevent forcing a page break after the entire document
         '@media print': {
-          padding: '20mm',
           margin: '0',
           borderRadius: '0',
           boxShadow: 'none',
           minHeight: '297mm',
           width: '210mm',
-          pageBreakAfter: 'always',
+          // pageBreakAfter removed from print media to avoid extra blank page
           // Preserve theme colors in print
           background: styles.container.backgroundColor,
           color: styles.container.color,
@@ -57,7 +80,7 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
     >
       {/* Header */}
       <Box sx={{ 
-        marginBottom: printMode ? '16px' : '24px',
+        // marginBottom: printMode ? '16px' : '24px',
         pageBreakAfter: printMode ? 'avoid' : 'auto',
       }}>
         <Typography 
