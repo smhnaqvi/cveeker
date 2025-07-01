@@ -3,12 +3,22 @@ import { useParams, useSearchParams } from "react-router-dom"
 import { useResume } from "../../../lib/hooks/useResumes"
 import { convertResumeToFormValues } from "../../../lib/utils/resumeConverter"
 import type { ResumeFormValues } from "./components/ResumeForm"
-import { Alert, Box, CircularProgress, Button, Stack, Typography } from "@mui/material"
+import { Alert, Box, CircularProgress, Stack, Typography } from "@mui/material"
 import { Print } from "@mui/icons-material"
-import { useRef } from "react"
+import { useRef, useState } from "react"
+import { resumeService } from "../../../lib/services"
+import { LoadingButton } from "@mui/lab"
 
 
 const PreviewResume = () => {
+    const [isDownloading, setIsDownloading] = useState(false);
+    const handleDownloadPDF = async () => {
+        setIsDownloading(true);
+        await resumeService.downloadResumeAsPDF(Number(id)).finally(() => {
+          setIsDownloading(false);
+      });
+    }
+
     const { id } = useParams()
     const previewRef = useRef<HTMLDivElement>(null)
     
@@ -62,12 +72,16 @@ const PreviewResume = () => {
                 <Typography variant="h4" component="h1">
                     Resume Preview
                 </Typography>
-                <Button 
+                <LoadingButton
                     variant="contained" 
+                    loading={isDownloading}
+                    loadingPosition="start"
+                    disabled={isDownloading}
                     startIcon={<Print />}
+                    onClick={handleDownloadPDF}
                 >
-                    Print Resume
-                </Button>
+                    Download Resume
+                </LoadingButton>
             </Stack>
             
             <div id="resume-preview" ref={previewRef}>

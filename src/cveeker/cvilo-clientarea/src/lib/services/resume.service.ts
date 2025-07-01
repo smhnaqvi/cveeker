@@ -256,6 +256,36 @@ export class ResumeService extends BaseService {
   async bulkCloneResumes(ids: number[]): Promise<ApiResponse<BulkOperationResponse>> {
     return this.post<BulkOperationResponse>('/bulk-clone', { ids });
   }
+
+  async downloadResumeAsPDF(id: number): Promise<void> {
+    const pdfUrl = `${this.apiUrl + `/${id}/download-pdf`}`;
+    
+    try {
+      const response = await fetch(pdfUrl, {
+        method: 'GET',
+        // headers: {
+        //   'Authorization': `Bearer ${this.getAuthToken()}`,
+        // },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `resume-${id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      throw error;
+    }
+  }
 }
 
 // Export singleton instance

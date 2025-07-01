@@ -4,9 +4,11 @@ import type { ApiResponse, QueryParams } from './types';
 
 export class BaseService {
   protected baseUrl: string;
+  protected apiUrl: string;
 
   constructor(baseUrl: string) {
     this.baseUrl = "/api/v1/" + baseUrl;
+    this.apiUrl = apiService.serverPath(this.baseUrl);
   }
 
   /**

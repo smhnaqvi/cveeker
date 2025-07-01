@@ -79,6 +79,9 @@ api.interceptors.response.use(
 // API service functions
 export const apiService = {
   // GET request
+
+  serverPath: (path: string) => `${api.defaults.baseURL}${path}`,
+
   get: <T = unknown>(url: string, config?: AxiosRequestConfig) => 
     api.get<T>(url, config).then(response => response.data),
   

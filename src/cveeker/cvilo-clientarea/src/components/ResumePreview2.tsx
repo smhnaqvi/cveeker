@@ -646,6 +646,50 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
           )}
         </Box>
       )}
+
+      {/* CVilo Advertisement - Print Only Footer */}
+      {printMode && (
+        <Box sx={{ 
+          marginTop: '16px',
+          pageBreakAfter: 'avoid',
+          textAlign: 'center',
+          opacity: '0.7',
+          position: 'relative',
+          '@media print': {
+            position: 'fixed',
+            bottom: '10mm',
+            left: '0',
+            right: '0',
+            textAlign: 'center',
+          },
+        }}>
+          <Divider 
+            sx={{ 
+              borderColor: styles.section.dividerColor,
+              margin: '8px 0',
+            }} 
+          />
+          <Typography 
+            variant="caption" 
+            sx={{
+              color: styles.content.secondaryColor,
+              fontSize: '0.7rem',
+              fontStyle: 'italic',
+              lineHeight: '1.4',
+              pageBreakAfter: 'avoid',
+            }}
+          >
+            Created with{' '}
+            <span style={{ 
+              color: styles.content.accentColor || styles.section.titleColor,
+              fontWeight: '600',
+            }}>
+              CVilo
+            </span>
+            {' '}• Professional Resume Builder
+          </Typography>
+        </Box>
+      )}
     </Box>
   );
 };
