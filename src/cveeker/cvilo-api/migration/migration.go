@@ -10,7 +10,7 @@ import (
 // Auto-migrate the schemas
 func AutoMigrate() error {
 	db := database.GetSqliteDB()
-	err := db.AutoMigrate(&models.UserModel{}, &models.ResumeModel{})
+	err := db.AutoMigrate(&models.UserModel{}, &models.ResumeModel{}, &models.LinkedInAuthModel{})
 	if err != nil {
 		return err
 	}

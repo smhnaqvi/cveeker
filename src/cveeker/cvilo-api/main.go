@@ -42,6 +42,7 @@ func main() {
 	// Initialize controllers (no database parameters needed)
 	userController := controllers.NewUserController()
 	resumeController := controllers.NewResumeController()
+	linkedInController := controllers.NewLinkedInController()
 
 	// Initialize router
 	router := gin.Default()
@@ -113,6 +114,16 @@ func main() {
 				"data":    utils.GetSampleData(),
 			})
 		})
+
+		// LinkedIn OAuth routes
+		linkedin := v1.Group("/linkedin")
+		{
+			linkedin.GET("/auth-url", linkedInController.GetAuthURL)                  // Get LinkedIn OAuth URL
+			linkedin.POST("/callback", linkedInController.HandleCallback)             // Handle OAuth callback
+			linkedin.GET("/profile/:id", linkedInController.GetLinkedInProfile)       // Get LinkedIn profile data
+			linkedin.POST("/sync/:id", linkedInController.SyncProfile)                // Sync LinkedIn profile data
+			linkedin.DELETE("/disconnect/:id", linkedInController.DisconnectLinkedIn) // Disconnect LinkedIn
+		}
 	}
 
 	// API documentation endpoint
@@ -127,6 +138,7 @@ func main() {
 				"controllers":      "Organized with controller-based architecture",
 				"validation":       "Enhanced input validation and error handling",
 				"relationships":    "Proper user-resume relationships with cascading operations",
+				"linkedin_oauth":   "LinkedIn OAuth integration for profile data import",
 			},
 			"endpoints": gin.H{
 				"users": gin.H{
@@ -148,6 +160,13 @@ func main() {
 					"POST /resumes/:id/clone":        "Clone resume",
 					"PUT /resumes/:id/toggle-status": "Toggle resume active status",
 					"GET /resumes/:id/download-pdf":  "Download resume as PDF",
+				},
+				"linkedin": gin.H{
+					"GET /linkedin/auth-url":          "Get LinkedIn OAuth authorization URL",
+					"POST /linkedin/callback":         "Handle LinkedIn OAuth callback and create resume",
+					"GET /linkedin/profile/:id":       "Get latest resume created from LinkedIn for user",
+					"POST /linkedin/sync/:id":         "Sync LinkedIn profile and create new resume",
+					"DELETE /linkedin/disconnect/:id": "Disconnect LinkedIn for user",
 				},
 				"helpers": gin.H{
 					"POST /helpers/parse-experience": "Parse experience data to JSON",
@@ -189,6 +208,30 @@ func main() {
 						"phone":     "+1234567890",
 						"summary":   "Experienced software developer...",
 						"skills":    `[{"name": "Go", "category": "Programming", "level": 4}]`,
+					},
+				},
+				"linkedin_oauth": gin.H{
+					"get_auth_url": "GET /api/v1/linkedin/auth-url?user_id=1",
+					"callback": gin.H{
+						"url": "POST /api/v1/linkedin/callback",
+						"body": gin.H{
+							"code":  "authorization_code_from_linkedin",
+							"state": "optional_state_parameter",
+						},
+						"response": gin.H{
+							"user": gin.H{
+								"id":    1,
+								"name":  "John Doe",
+								"email": "john@example.com",
+							},
+							"resume": gin.H{
+								"id":        1,
+								"title":     "LinkedIn Profile Resume",
+								"full_name": "John Doe",
+								"summary":   "Experienced software developer...",
+								"linkedin":  "https://linkedin.com/in/johndoe",
+							},
+						},
 					},
 				},
 			},
