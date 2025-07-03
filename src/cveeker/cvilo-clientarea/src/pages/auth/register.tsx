@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Box, Divider, Stack, Alert, Typography, Link } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
@@ -11,8 +10,14 @@ import Button from "../../components/Button";
 import { linkedInService } from "../../lib/services/linkedin.service";
 import { authService } from "../../lib/services/auth.service";
 
-const Login = () => {
-  const methods = useForm();
+interface RegisterFormData {
+  name: string;
+  email: string;
+  password: string;
+}
+
+const Register = () => {
+  const methods = useForm<RegisterFormData>();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,13 +25,13 @@ const Login = () => {
 
   const { handleSubmit } = methods;
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: { name: string; email: string; password: string }) => {
     setIsLoading(true);
     setError(null);
     
     try {
-      console.log("Email login", data);
-      const response = await authService.login(data);
+      console.log("Register", data);
+      const response = await authService.register(data);
       
       if (response.data) {
         // Store token in localStorage
@@ -37,24 +42,24 @@ const Login = () => {
         navigate('/dashboard');
       }
     } catch (err: unknown) {
-      console.error("Login error:", err);
-      setError("Login failed. Please check your credentials and try again.");
+      console.error("Registration error:", err);
+      setError("Registration failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const loginWithGoogle = () => {
-    // Replace with your Google login logic
-    console.log("Login with Google");
+  const registerWithGoogle = () => {
+    // Replace with your Google registration logic
+    console.log("Register with Google");
   };
 
-  const loginWithGitHub = () => {
-    // Replace with your GitHub login logic
-    console.log("Login with GitHub");
+  const registerWithGitHub = () => {
+    // Replace with your GitHub registration logic
+    console.log("Register with GitHub");
   };
 
-  const loginWithLinkedIn = async () => {
+  const registerWithLinkedIn = async () => {
     setIsLinkedInLoading(true);
     setError(null);
     
@@ -75,8 +80,8 @@ const Login = () => {
         throw new Error('Failed to get LinkedIn authorization URL');
       }
     } catch (err) {
-      console.error("LinkedIn login error:", err);
-      setError("Failed to initiate LinkedIn login. Please try again.");
+      console.error("LinkedIn registration error:", err);
+      setError("Failed to initiate LinkedIn registration. Please try again.");
     } finally {
       setIsLinkedInLoading(false);
     }
@@ -88,6 +93,10 @@ const Login = () => {
         <Logo />
       </Box>
       
+      <Typography variant="h4" textAlign="center" mb={3}>
+        Create Account
+      </Typography>
+      
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
           {error}
@@ -97,6 +106,7 @@ const Login = () => {
       <FormProvider onSubmit={onSubmit} methods={methods}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={2}>
+            <Input name="name" label="Full Name" type="text" />
             <Input name="email" label="Email" type="email" />
             <Input name="password" label="Password" type="password" />
             <Button 
@@ -105,7 +115,7 @@ const Login = () => {
               fullWidth 
               disabled={isLoading}
             >
-              {isLoading ? "Logging in..." : "Login with Email"}
+              {isLoading ? "Creating Account..." : "Create Account"}
             </Button>
           </Stack>
         </form>
@@ -113,9 +123,9 @@ const Login = () => {
 
       <Box textAlign="center" mt={2}>
         <Typography variant="body2">
-          Don't have an account?{" "}
-          <Link component={RouterLink} to="/register">
-            Sign up
+          Already have an account?{" "}
+          <Link component={RouterLink} to="/login">
+            Sign in
           </Link>
         </Typography>
       </Box>
@@ -124,7 +134,7 @@ const Login = () => {
 
       <Stack spacing={2}>
         <Button
-          onClick={loginWithLinkedIn}
+          onClick={registerWithLinkedIn}
           variant="outlined"
           startIcon={<LinkedIn />}
           fullWidth
@@ -133,7 +143,7 @@ const Login = () => {
           {isLinkedInLoading ? "Connecting..." : "Continue with LinkedIn"}
         </Button>
         <Button
-          onClick={loginWithGoogle}
+          onClick={registerWithGoogle}
           variant="outlined"
           startIcon={<Google />}
           fullWidth
@@ -141,7 +151,7 @@ const Login = () => {
           Continue with Google
         </Button>
         <Button
-          onClick={loginWithGitHub}
+          onClick={registerWithGitHub}
           variant="outlined"
           startIcon={<GitHub />}
           fullWidth
@@ -153,4 +163,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register; 

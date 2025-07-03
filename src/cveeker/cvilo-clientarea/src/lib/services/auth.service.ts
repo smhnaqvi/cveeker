@@ -10,7 +10,7 @@ import type {
 
 export class AuthService extends BaseService {
   constructor() {
-    super('/api/auth');
+    super('/api/v1/auth');
   }
 
   /**

@@ -1,9 +1,15 @@
 // Authentication configuration
 export const authConfig = {
-  // Supabase configuration (you'll need to set these up)
-  supabase: {
-    url: process.env.REACT_APP_SUPABASE_URL || 'your-supabase-url',
-    anonKey: process.env.REACT_APP_SUPABASE_ANON_KEY || 'your-supabase-anon-key',
+  // API configuration
+  api: {
+    baseUrl: process.env.REACT_APP_API_URL || 'http://localhost:8081',
+    authEndpoint: '/api/v1/auth',
+  },
+  
+  // JWT configuration
+  jwt: {
+    tokenKey: 'auth_token',
+    userKey: 'user',
   },
   
   // OAuth providers
@@ -15,6 +21,9 @@ export const authConfig = {
     github: {
       enabled: true,
       clientId: process.env.REACT_APP_GITHUB_CLIENT_ID || '',
+    },
+    linkedin: {
+      enabled: true,
     },
   },
   
