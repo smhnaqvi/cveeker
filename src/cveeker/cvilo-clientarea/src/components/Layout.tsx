@@ -27,6 +27,7 @@ import {
 } from '@mui/icons-material'
 import { useNavigate, useLocation } from 'react-router-dom'
 import Logo from './Logo'
+import { useAuthStore } from '../stores'
 
 const drawerWidth = 250
 
@@ -39,6 +40,7 @@ export default function Layout({ children }: LayoutProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const navigate = useNavigate()
   const location = useLocation()
+  const { logout, user } = useAuthStore()
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen)
@@ -53,8 +55,7 @@ export default function Layout({ children }: LayoutProps) {
   }
 
   const handleLogout = () => {
-    // Simple logout - just navigate to login
-    // In a real app, you would clear session/tokens here
+    logout()
     navigate('/auth/login')
     handleProfileMenuClose()
   }
@@ -170,7 +171,7 @@ export default function Layout({ children }: LayoutProps) {
           <ListItemIcon>
             <Person fontSize="small" />
           </ListItemIcon>
-          Profile
+          {user?.name || 'Profile'}
         </MenuItem>
         <MenuItem onClick={handleLogout}>
           <ListItemIcon>

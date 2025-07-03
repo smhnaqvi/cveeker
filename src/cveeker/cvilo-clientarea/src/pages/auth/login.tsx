@@ -9,38 +9,29 @@ import Logo from "../../components/Logo";
 import Input from "../../components/Input";
 import Button from "../../components/Button";
 import { linkedInService } from "../../lib/services/linkedin.service";
-import { authService } from "../../lib/services/auth.service";
+import { useAuthStore } from "../../stores";
 
 const Login = () => {
   const methods = useForm();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLinkedInLoading, setIsLinkedInLoading] = useState(false);
+  const { login, isLoading } = useAuthStore();
 
   const { handleSubmit } = methods;
 
   const onSubmit = async (data: any) => {
-    setIsLoading(true);
     setError(null);
     
     try {
       console.log("Email login", data);
-      const response = await authService.login(data);
+      await login(data.email, data.password);
       
-      if (response.data) {
-        // Store token in localStorage
-        localStorage.setItem('auth_token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        
-        // Redirect to dashboard
-        navigate('/dashboard');
-      }
+      // Redirect to dashboard
+      navigate('/dashboard');
     } catch (err: unknown) {
       console.error("Login error:", err);
       setError("Login failed. Please check your credentials and try again.");
-    } finally {
-      setIsLoading(false);
     }
   };
 

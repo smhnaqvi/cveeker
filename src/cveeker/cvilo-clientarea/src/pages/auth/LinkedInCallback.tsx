@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Box, CircularProgress, Typography, Alert } from '@mui/material';
+import { useAuthStore } from '../../stores';
 
 const LinkedInCallback = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(true);
+  const { updateUser } = useAuthStore();
 
   useEffect(() => {
     const handleLinkedInCallback = async () => {
@@ -36,7 +38,7 @@ const LinkedInCallback = () => {
     };
 
     handleLinkedInCallback();
-  }, [searchParams, navigate]);
+  }, [searchParams, navigate, updateUser]);
 
   if (isProcessing) {
     return (

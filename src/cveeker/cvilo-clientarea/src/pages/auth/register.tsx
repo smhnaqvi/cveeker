@@ -8,7 +8,7 @@ import Logo from "../../components/Logo";
 import Input from "../../components/Input";
 import Button from "../../components/Button";
 import { linkedInService } from "../../lib/services/linkedin.service";
-import { authService } from "../../lib/services/auth.service";
+import { useAuthStore } from "../../stores";
 
 interface RegisterFormData {
   name: string;
@@ -19,33 +19,24 @@ interface RegisterFormData {
 const Register = () => {
   const methods = useForm<RegisterFormData>();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLinkedInLoading, setIsLinkedInLoading] = useState(false);
+  const { register, isLoading } = useAuthStore();
 
   const { handleSubmit } = methods;
 
   const onSubmit = async (data: { name: string; email: string; password: string }) => {
-    setIsLoading(true);
     setError(null);
     
     try {
       console.log("Register", data);
-      const response = await authService.register(data);
+      await register(data.name, data.email, data.password);
       
-      if (response.data) {
-        // Store token in localStorage
-        localStorage.setItem('auth_token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        
-        // Redirect to dashboard
-        navigate('/dashboard');
-      }
+      // Redirect to dashboard
+      navigate('/dashboard');
     } catch (err: unknown) {
       console.error("Registration error:", err);
       setError("Registration failed. Please try again.");
-    } finally {
-      setIsLoading(false);
     }
   };
 
