@@ -113,7 +113,7 @@ func (lc *LinkedInController) HandleCallback(c *gin.Context) {
 	log.Println("HandleCallback: Looking up existing user by email")
 	err = user.GetUserByEmail(email)
 	if err != nil {
-		log.Printf("HandleCallback: User not found, creating new user with email: %s", email)
+		log.Printf("HandleCallback: User not found, creating new user with email: %s, error: %v", email, err)
 		// User doesn't exist, create new user
 		user = &models.UserModel{
 			Name:     resume.FullName,
@@ -137,28 +137,21 @@ func (lc *LinkedInController) HandleCallback(c *gin.Context) {
 
 	// Save LinkedIn authentication data
 	log.Println("HandleCallback: Saving LinkedIn authentication data")
-	linkedInAuth := &models.LinkedInAuthModel{
-		UserID:       user.ID,
-		LinkedInID:   lc.linkedInService.ExtractLinkedInID(resume.LinkedIn),
-		AccessToken:  tokenResponse.AccessToken,
-		RefreshToken: tokenResponse.RefreshToken,
-		TokenExpiry:  time.Now().Add(time.Duration(tokenResponse.ExpiresIn) * time.Second),
-		ProfileURL:   resume.LinkedIn,
-		IsActive:     true,
-	}
-
-	log.Printf("HandleCallback: LinkedIn ID extracted: %s", linkedInAuth.LinkedInID)
+	linkedInID := lc.linkedInService.ExtractLinkedInID(resume.LinkedIn)
+	log.Printf("HandleCallback: LinkedIn ID extracted: %s", linkedInID)
 
 	// Check if LinkedIn auth already exists for this user
 	existingAuth := &models.LinkedInAuthModel{}
 	err = existingAuth.GetByUserID(user.ID)
 	if err == nil {
-		log.Printf("HandleCallback: Updating existing LinkedIn auth for user ID: %d", user.ID)
-		// Update existing auth
-		existingAuth.AccessToken = linkedInAuth.AccessToken
-		existingAuth.RefreshToken = linkedInAuth.RefreshToken
-		existingAuth.TokenExpiry = linkedInAuth.TokenExpiry
-		existingAuth.ProfileURL = linkedInAuth.ProfileURL
+		log.Printf("HandleCallback: Found existing LinkedIn auth for user ID: %d", user.ID)
+
+		// Update existing auth for the same user
+		existingAuth.LinkedInID = linkedInID
+		existingAuth.AccessToken = tokenResponse.AccessToken
+		existingAuth.RefreshToken = tokenResponse.RefreshToken
+		existingAuth.TokenExpiry = time.Now().Add(time.Duration(tokenResponse.ExpiresIn) * time.Second)
+		existingAuth.ProfileURL = resume.LinkedIn
 		existingAuth.IsActive = true
 
 		if err := existingAuth.Update(); err != nil {
@@ -166,10 +159,40 @@ func (lc *LinkedInController) HandleCallback(c *gin.Context) {
 			utils.InternalError(c, "Failed to update LinkedIn authentication", err.Error())
 			return
 		}
-		log.Println("HandleCallback: Successfully updated existing LinkedIn auth")
+		log.Printf("HandleCallback: Successfully updated existing LinkedIn auth for user ID: %d", user.ID)
 	} else {
+		// Check if this LinkedIn ID is already associated with a different user
+		existingAuthByLinkedInID := &models.LinkedInAuthModel{}
+		err = existingAuthByLinkedInID.GetByLinkedInID(linkedInID)
+		if err == nil {
+			log.Printf("HandleCallback: LinkedIn ID %s is already associated with user ID %d, but current user is %d",
+				linkedInID, existingAuthByLinkedInID.UserID, user.ID)
+
+			// We need to handle this conflict. For now, we'll deactivate the old auth and create a new one
+			// In a production system, you might want to merge accounts or ask the user what to do
+			existingAuthByLinkedInID.IsActive = false
+			if err := existingAuthByLinkedInID.Update(); err != nil {
+				log.Printf("HandleCallback: ERROR - Failed to deactivate old LinkedIn auth: %v", err)
+				utils.InternalError(c, "Failed to deactivate old LinkedIn auth", err.Error())
+				return
+			}
+			log.Printf("HandleCallback: Deactivated old LinkedIn auth for user ID: %d", existingAuthByLinkedInID.UserID)
+		}
+
 		log.Printf("HandleCallback: Creating new LinkedIn auth for user ID: %d", user.ID)
 		// Create new auth
+		linkedInAuth := &models.LinkedInAuthModel{
+			UserID:       user.ID,
+			LinkedInID:   linkedInID,
+			AccessToken:  tokenResponse.AccessToken,
+			RefreshToken: tokenResponse.RefreshToken,
+			TokenExpiry:  time.Now().Add(time.Duration(tokenResponse.ExpiresIn) * time.Second),
+			ProfileURL:   resume.LinkedIn,
+			IsActive:     true,
+		}
+
+		log.Printf("HandleCallback: LinkedIn auth created: %v", linkedInAuth)
+
 		if err := linkedInAuth.Create(); err != nil {
 			log.Printf("HandleCallback: ERROR - Failed to save LinkedIn authentication: %v", err)
 			utils.InternalError(c, "Failed to save LinkedIn authentication", err.Error())
@@ -219,21 +242,20 @@ func (lc *LinkedInController) HandleCallback(c *gin.Context) {
 		log.Println("HandleCallback: No user profile updates needed")
 	}
 
-	log.Printf("HandleCallback: LinkedIn authentication completed successfully for user ID: %d", user.ID)
-	utils.Success(c, "LinkedIn authentication successful", gin.H{
-		"user": gin.H{
-			"id":    user.ID,
-			"name":  user.Name,
-			"email": user.Email,
-		},
-		"resume": gin.H{
-			"id":        resume.ID,
-			"title":     resume.Title,
-			"full_name": resume.FullName,
-			"summary":   resume.Summary,
-			"linkedin":  resume.LinkedIn,
-		},
-	})
+	// generate jwt token pair
+	authService := services.NewAuthService()
+	tokenPair, err := authService.GenerateTokenPair(*user)
+	if err != nil {
+		log.Printf("HandleCallback: ERROR - Failed to generate JWT tokens: %v", err)
+		utils.InternalError(c, "Failed to generate JWT tokens", err.Error())
+		return
+	}
+
+	// redirect user to react app with the jwt access token and refresh token
+	redirectURL := os.Getenv("REDIRECT_LINKEDIN_CLIENTAREA_URL") +
+		"?access_token=" + tokenPair.AccessToken +
+		"&refresh_token=" + tokenPair.RefreshToken
+	c.Redirect(http.StatusSeeOther, redirectURL)
 }
 
 // SyncProfile syncs LinkedIn profile data and creates resume for a user

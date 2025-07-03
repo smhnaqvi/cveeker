@@ -9,6 +9,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/smhnaqvi/cvilo/controllers"
 	"github.com/smhnaqvi/cvilo/database"
+	"github.com/smhnaqvi/cvilo/middleware"
 	"github.com/smhnaqvi/cvilo/migration"
 	"github.com/smhnaqvi/cvilo/utils"
 )
@@ -25,6 +26,11 @@ func main() {
 	}
 	defer database.CloseDatabases()
 
+	// Clear database
+	if err := database.ClearDatabase(); err != nil {
+		log.Fatal("Failed to clear database:", err)
+	}
+
 	// Auto-migrate the schemas
 	if err := migration.AutoMigrate(); err != nil {
 		log.Fatal("Failed to migrate database:", err)
@@ -40,6 +46,7 @@ func main() {
 	}
 
 	// Initialize controllers (no database parameters needed)
+	authController := controllers.NewAuthController()
 	userController := controllers.NewUserController()
 	resumeController := controllers.NewResumeController()
 	linkedInController := controllers.NewLinkedInController()
@@ -73,6 +80,23 @@ func main() {
 	// API version 1 routes
 	v1 := router.Group("/api/v1")
 	{
+		// Auth routes
+		auth := v1.Group("/auth")
+		{
+			auth.POST("/login", authController.Login)          // User login
+			auth.POST("/register", authController.Register)    // User registration
+			auth.POST("/refresh", authController.RefreshToken) // Refresh token
+			auth.GET("/verify", authController.VerifyToken)    // Verify token
+		}
+
+		// Protected routes (require authentication)
+		protected := v1.Group("")
+		protected.Use(middleware.AuthMiddleware())
+		{
+			protected.GET("/auth/me", authController.Me)                           // Get current user
+			protected.POST("/auth/change-password", authController.ChangePassword) // Change password
+		}
+
 		// User routes
 		users := v1.Group("/users")
 		{

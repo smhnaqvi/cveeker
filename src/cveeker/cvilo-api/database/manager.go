@@ -32,6 +32,17 @@ func InitializeDatabases() error {
 	return nil
 }
 
+// ClearDatabase clears all tables in the database
+func ClearDatabase() error {
+
+	// delete all tables
+	DB.SQLiteDB.Exec("DELETE FROM sqlite_sequence")
+	DB.SQLiteDB.Exec("DELETE FROM users")
+	DB.SQLiteDB.Exec("DELETE FROM resumes")
+	DB.SQLiteDB.Exec("DELETE FROM linkedin_resumes")
+	return nil
+}
+
 // GetSqliteDB returns the SQLite database instance
 func GetSqliteDB() *gorm.DB {
 	if DB == nil {

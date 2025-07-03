@@ -15,10 +15,11 @@ type UserModel struct {
 	DeletedAt gorm.DeletedAt `json:"deleted_at,omitempty" gorm:"index"`
 
 	// Personal Information
-	ChatID *int64 `json:"chat_id,omitempty" gorm:"unique"`
-	Name   string `json:"name" gorm:"not null" validate:"required,min=2,max=100"`
-	Email  string `json:"email" gorm:"uniqueIndex;not null" validate:"required,email"`
-	Phone  string `json:"phone" validate:"min=10,max=20"`
+	ChatID   *int64 `json:"chat_id,omitempty" gorm:"unique"`
+	Name     string `json:"name" gorm:"not null" validate:"required,min=2,max=100"`
+	Email    string `json:"email" gorm:"uniqueIndex;not null" validate:"required,email"`
+	Password string `json:"-" gorm:"not null" validate:"required,min=6"` // "-" means this field won't be included in JSON
+	Phone    string `json:"phone" validate:"min=10,max=20"`
 
 	// Professional Information
 	Summary    string `json:"summary" gorm:"type:text"`
@@ -58,6 +59,7 @@ func (u *UserModel) BeforeCreate(tx *gorm.DB) error {
 type UserCreateRequest struct {
 	Name     string `json:"name" validate:"required,min=2,max=100"`
 	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=6"`
 	Phone    string `json:"phone" validate:"min=10,max=20"`
 	Summary  string `json:"summary"`
 	Location string `json:"location"`
@@ -172,4 +174,27 @@ func (u *UserModel) GetUserByChatID(chatID int64) error {
 		return nil
 	}
 	return errors.New("user not found")
+}
+
+// ToUserResponse converts UserModel to UserResponse
+func (u *UserModel) ToUserResponse() UserResponse {
+	return UserResponse{
+		ID:         u.ID,
+		CreatedAt:  u.CreatedAt,
+		UpdatedAt:  u.UpdatedAt,
+		Name:       u.Name,
+		Email:      u.Email,
+		Phone:      u.Phone,
+		Summary:    u.Summary,
+		Education:  u.Education,
+		Experience: u.Experience,
+		Skills:     u.Skills,
+		Languages:  u.Languages,
+		Location:   u.Location,
+		Website:    u.Website,
+		LinkedIn:   u.LinkedIn,
+		GitHub:     u.GitHub,
+		Step:       u.Step,
+		IsActive:   u.IsActive,
+	}
 }
