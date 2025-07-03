@@ -17,6 +17,7 @@ import {
   TrendingUp as TrendingUpIcon,
 } from '@mui/icons-material'
 import PageContent from '../../components/Page'
+import { useUser } from '../../stores'
 
 const stats = [
     {
@@ -74,12 +75,15 @@ const recentResumes = [
   ]
 
 export default function Dashboard() {
+  const user = useUser();
+
   return (
     <PageContent>
       {/* Welcome Section */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
-          Welcome back, John! 👋
+          {/* show user name from auth store */}
+          Welcome back, {user?.name}! 👋
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
           Here's an overview of your resume performance and recent activity.
