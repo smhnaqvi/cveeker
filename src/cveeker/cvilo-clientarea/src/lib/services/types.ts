@@ -49,12 +49,14 @@ export interface RegisterRequest {
 }
 
 export interface AuthResponse {
-  token: string;
+  access_token: string;
+  refresh_token: string;
   user: User;
 }
 
 export interface RefreshTokenResponse {
-  token: string;
+  access_token: string;
+  refresh_token: string;
 }
 
 // LinkedIn authentication types

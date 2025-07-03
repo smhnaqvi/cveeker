@@ -10,14 +10,34 @@ const api: AxiosInstance = axios.create({
   },
 });
 
+// Flag to prevent multiple refresh attempts
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (value?: unknown) => void;
+  reject: (reason?: unknown) => void;
+}> = [];
+
+const processQueue = (error: unknown, token: string | null = null) => {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (error) {
+      reject(error);
+    } else {
+      resolve(token);
+    }
+  });
+  
+  failedQueue = [];
+};
+
 // Request interceptor
 api.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    // Get token from localStorage or wherever you store it
-    const token = localStorage.getItem('access_token');
+  async (config: InternalAxiosRequestConfig) => {
+    // Get token from auth store state
+    const { useAuthStore } = await import('../stores/authStore');
+    const accessToken = useAuthStore.getState().accessToken;
     
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
     }
     
     console.log('Request:', config.method?.toUpperCase(), config.url);
@@ -35,8 +55,10 @@ api.interceptors.response.use(
     console.log('Response:', response.status, response.config.url);
     return response;
   },
-  (error) => {
+  async (error) => {
     console.error('Response error:', error);
+    
+    const originalRequest = error.config;
     
     // Handle specific error cases
     if (error.response) {
@@ -45,9 +67,55 @@ api.interceptors.response.use(
       
       switch (status) {
         case 401:
-          // Unauthorized - redirect to login
-          localStorage.removeItem('access_token');
-          window.location.href = '/login';
+          // Unauthorized - try to refresh token
+          if (!originalRequest._retry) {
+            if (isRefreshing) {
+              // If already refreshing, queue this request
+              return new Promise((resolve, reject) => {
+                failedQueue.push({ resolve, reject });
+              }).then(() => {
+                return api(originalRequest);
+              }).catch((err) => {
+                return Promise.reject(err);
+              });
+            }
+
+            originalRequest._retry = true;
+            isRefreshing = true;
+
+            try {
+              // Try to refresh the token using auth store
+              const { useAuthStore } = await import('../stores/authStore');
+              const refreshSuccess = await useAuthStore.getState().refreshAccessToken();
+              
+              if (refreshSuccess) {
+                // Get the new access token
+                const newAccessToken = useAuthStore.getState().accessToken;
+                
+                // Retry the original request with new token
+                originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+                processQueue(null, newAccessToken);
+                
+                return api(originalRequest);
+              } else {
+                throw new Error('Token refresh failed');
+              }
+            } catch (refreshError) {
+              console.error('Token refresh failed:', refreshError);
+              
+              // Clear tokens and redirect to login
+              const { useAuthStore } = await import('../stores/authStore');
+              useAuthStore.getState().logout();
+              
+              processQueue(refreshError, null);
+              
+              // Redirect to login page
+              window.location.href = '/login';
+              return Promise.reject(refreshError);
+            } finally {
+              isRefreshing = false;
+            }
+          }
           break;
         case 403:
           // Forbidden

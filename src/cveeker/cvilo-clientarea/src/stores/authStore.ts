@@ -6,7 +6,8 @@ import type { User } from '../lib/services/types';
 interface AuthState {
   // State
   user: User | null;
-  token: string | null;
+  accessToken: string | null;
+  refreshToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
 
@@ -17,6 +18,8 @@ interface AuthState {
   updateUser: (userData: User) => void;
   initializeAuth: () => Promise<void>;
   setLoading: (loading: boolean) => void;
+  refreshAccessToken: () => Promise<boolean>;
+  setTokens: (accessToken: string, refreshToken: string) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -24,41 +27,147 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       // Initial state
       user: null,
-      token: null,
+      accessToken: null,
+      refreshToken: null,
       isAuthenticated: false,
       isLoading: true,
 
       // Actions
       setLoading: (loading: boolean) => set({ isLoading: loading }),
 
-      initializeAuth: async () => {
-        const { token, user } = get();
+      setTokens: (accessToken: string, refreshToken: string) => {
+        // Update state - Zustand persist will handle localStorage
+        set({ 
+          accessToken, 
+          refreshToken,
+          isAuthenticated: true 
+        });
         
-        if (token && user) {
-          try {
-            const response = await authService.verifyToken();
-            if (response.data?.valid) {
-              set({ isAuthenticated: true });
-            } else {
-              // Token is invalid, clear state
-              set({ 
-                user: null, 
-                token: null, 
-                isAuthenticated: false 
-              });
-            }
-          } catch (error) {
-            console.error('Token verification failed:', error);
-            // Clear invalid state
+        console.log('setTokens', accessToken, refreshToken);
+      },
+
+      refreshAccessToken: async (): Promise<boolean> => {
+        const { refreshToken } = get();
+        
+        if (!refreshToken) {
+          return false;
+        }
+
+        try {
+          const response = await authService.refreshToken();
+          
+          if (response.data) {
+            const { access_token, refresh_token } = response.data;
+            
+            // Update state - Zustand persist will handle localStorage
             set({ 
-              user: null, 
-              token: null, 
-              isAuthenticated: false 
+              accessToken: access_token, 
+              refreshToken: refresh_token,
+              isAuthenticated: true 
             });
+            
+            return true;
           }
+        } catch (error) {
+          console.error('Token refresh failed:', error);
+          // Clear invalid tokens
+          get().logout();
+          return false;
         }
         
-        set({ isLoading: false });
+        return false;
+      },
+
+      initializeAuth: async () => {
+        set({ isLoading: true });
+        
+        console.log('initializeAuth');
+        
+        try {
+          // Get tokens from current state (Zustand persist handles localStorage)
+          const { accessToken, refreshToken } = get();
+          
+          console.log('accessToken', accessToken);
+          console.log('refreshToken', refreshToken);
+
+          if (!accessToken || !refreshToken) {
+            console.log('no tokens found');
+            // No tokens found, user needs to login
+            set({ 
+              user: null, 
+              accessToken: null, 
+              refreshToken: null, 
+              isAuthenticated: false,
+              isLoading: false 
+            });
+            return;
+          }
+
+          // Verify token is still valid
+          try {
+            const response = await authService.verifyToken();
+
+            console.log('verifyToken', response);
+            
+            if (response.data?.valid) {
+              // Token is valid, get user data
+              try {
+                const userResponse = await authService.getCurrentUser();
+                if (userResponse.data) {
+                  set({ 
+                    user: userResponse.data, 
+                    isAuthenticated: true,
+                    isLoading: false 
+                  });
+                  return;
+                }
+              } catch (userError) {
+                console.error('Failed to get user data:', userError);
+              }
+            }
+          } catch (verifyError) {
+            console.error('Token verification failed:', verifyError);
+          }
+
+          // Token is invalid, try to refresh
+          const refreshSuccess = await get().refreshAccessToken();
+          
+          if (refreshSuccess) {
+            // Refresh successful, get user data
+            try {
+              const userResponse = await authService.getCurrentUser();
+              if (userResponse.data) {
+                set({ 
+                  user: userResponse.data, 
+                  isAuthenticated: true,
+                  isLoading: false 
+                });
+                return;
+              }
+            } catch (userError) {
+              console.error('Failed to get user data after refresh:', userError);
+            }
+          }
+
+          // All attempts failed, clear state
+          set({ 
+            user: null, 
+            accessToken: null, 
+            refreshToken: null, 
+            isAuthenticated: false,
+            isLoading: false 
+          });
+          
+        } catch (error) {
+          console.error('Auth initialization error:', error);
+          set({ 
+            user: null, 
+            accessToken: null, 
+            refreshToken: null, 
+            isAuthenticated: false,
+            isLoading: false 
+          });
+        }
       },
 
       login: async (email: string, password: string) => {
@@ -68,11 +177,13 @@ export const useAuthStore = create<AuthState>()(
           const response = await authService.login({ email, password });
           
           if (response.data) {
-            const { token, user: userData } = response.data;
+            const { access_token, refresh_token, user: userData } = response.data;
             
+            // Update state - Zustand persist will handle localStorage
             set({
               user: userData,
-              token: token,
+              accessToken: access_token,
+              refreshToken: refresh_token,
               isAuthenticated: true,
               isLoading: false,
             });
@@ -91,11 +202,13 @@ export const useAuthStore = create<AuthState>()(
           const response = await authService.register({ name, email, password });
           
           if (response.data) {
-            const { token, user: userData } = response.data;
+            const { access_token, refresh_token, user: userData } = response.data;
             
+            // Update state - Zustand persist will handle localStorage
             set({
               user: userData,
-              token: token,
+              accessToken: access_token,
+              refreshToken: refresh_token,
               isAuthenticated: true,
               isLoading: false,
             });
@@ -108,9 +221,11 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
+        // Zustand persist will handle localStorage cleanup
         set({
           user: null,
-          token: null,
+          accessToken: null,
+          refreshToken: null,
           isAuthenticated: false,
           isLoading: false,
         });
@@ -126,7 +241,8 @@ export const useAuthStore = create<AuthState>()(
       // Only persist these fields
       partialize: (state) => ({
         user: state.user,
-        token: state.token,
+        accessToken: state.accessToken,
+        refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
       }),
     }
@@ -135,7 +251,8 @@ export const useAuthStore = create<AuthState>()(
 
 // Selector hooks for better performance
 export const useUser = () => useAuthStore((state) => state.user);
-export const useToken = () => useAuthStore((state) => state.token);
+export const useAccessToken = () => useAuthStore((state) => state.accessToken);
+export const useRefreshToken = () => useAuthStore((state) => state.refreshToken);
 export const useIsAuthenticated = () => useAuthStore((state) => state.isAuthenticated);
 export const useIsLoading = () => useAuthStore((state) => state.isLoading);
 export const useAuthActions = () => useAuthStore((state) => ({
@@ -144,4 +261,6 @@ export const useAuthActions = () => useAuthStore((state) => ({
   logout: state.logout,
   updateUser: state.updateUser,
   initializeAuth: state.initializeAuth,
+  refreshAccessToken: state.refreshAccessToken,
+  setTokens: state.setTokens,
 })); 

@@ -1,7 +1,6 @@
 export { 
   useAuthStore, 
-  useUser, 
-  useToken, 
+  useUser,
   useIsAuthenticated, 
   useIsLoading, 
   useAuthActions 

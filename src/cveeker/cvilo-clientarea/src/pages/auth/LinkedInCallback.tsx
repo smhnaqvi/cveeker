@@ -8,7 +8,7 @@ const LinkedInCallback = () => {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(true);
-  const { updateUser } = useAuthStore();
+  const { setTokens } = useAuthStore();
 
   useEffect(() => {
     const handleLinkedInCallback = async () => {
@@ -16,16 +16,15 @@ const LinkedInCallback = () => {
         const accessToken = searchParams.get('access_token');
         const refreshToken = searchParams.get('refresh_token');
 
-        // Check for required authorization code
+        // Check for required tokens
         if (!accessToken || !refreshToken) {
-          setError('Authorization code not found. Please try logging in again.');
+          setError('Authorization tokens not found. Please try logging in again.');
           setIsProcessing(false);
           return;
         }
 
-        // store access token and refresh token in local storage
-        localStorage.setItem('access_token', accessToken);
-        localStorage.setItem('refresh_token', refreshToken);
+        // Store tokens using auth store
+        setTokens(accessToken, refreshToken);
 
         // redirect to dashboard
         navigate('/dashboard', { replace: true });
@@ -38,7 +37,7 @@ const LinkedInCallback = () => {
     };
 
     handleLinkedInCallback();
-  }, [searchParams, navigate, updateUser]);
+  }, [searchParams, navigate, setTokens]);
 
   if (isProcessing) {
     return (

@@ -1,12 +1,19 @@
 import { Outlet, Navigate } from "react-router-dom"
+import { useEffect } from "react"
 import Layout from "../components/Layout"
 import { useSearchParams } from "react-router-dom"
 import { useAuthStore } from "../stores"
+import { Box, CircularProgress, Typography } from "@mui/material"
 
 const ProtectionProvider = () => {
   const [searchParams] = useSearchParams()
   const printMode = searchParams.get('print')
-  const { isAuthenticated, isLoading } = useAuthStore()
+  const { isAuthenticated, isLoading, initializeAuth } = useAuthStore()
+
+  // Initialize authentication on mount
+  useEffect(() => {
+    initializeAuth()
+  }, [initializeAuth])
 
   // Allow print mode without authentication
   if (printMode) {
@@ -15,7 +22,21 @@ const ProtectionProvider = () => {
 
   // Show loading state while checking authentication
   if (isLoading) {
-    return <div>Loading...</div>
+    return (
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        minHeight="100vh"
+        gap={2}
+      >
+        <CircularProgress size={60} />
+        <Typography variant="h6" color="text.secondary">
+          Loading...
+        </Typography>
+      </Box>
+    )
   }
   
   // Redirect to login if not authenticated
