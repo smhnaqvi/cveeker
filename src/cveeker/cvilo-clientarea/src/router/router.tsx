@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import Dashboard from "../pages/dashboard";
 import Login from "../pages/auth/login";
+import LinkedInCallback from "../pages/auth/LinkedInCallback";
 import ProtectionProvider from "../provider/ProtectionProvider";
 import CreateResume from "../pages/dashboard/resume/CreateResume";
 import PreviewResume from "../pages/dashboard/resume/PreviewResume";
@@ -22,6 +23,10 @@ const router = createBrowserRouter([
             {
                 path: "login",
                 element: <Login />,
+            },
+            {
+                path: "linkedin/callback",
+                element: <LinkedInCallback />,
             },
         ],
     },

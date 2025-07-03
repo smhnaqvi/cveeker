@@ -119,7 +119,7 @@ func main() {
 		linkedin := v1.Group("/linkedin")
 		{
 			linkedin.GET("/auth-url", linkedInController.GetAuthURL)                  // Get LinkedIn OAuth URL
-			linkedin.POST("/callback", linkedInController.HandleCallback)             // Handle OAuth callback
+			linkedin.GET("/callback", linkedInController.HandleCallback)              // Handle OAuth callback
 			linkedin.GET("/profile/:id", linkedInController.GetLinkedInProfile)       // Get LinkedIn profile data
 			linkedin.POST("/sync/:id", linkedInController.SyncProfile)                // Sync LinkedIn profile data
 			linkedin.DELETE("/disconnect/:id", linkedInController.DisconnectLinkedIn) // Disconnect LinkedIn

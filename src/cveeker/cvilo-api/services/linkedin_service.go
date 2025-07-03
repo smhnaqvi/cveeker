@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -26,7 +27,12 @@ func NewLinkedInService() *LinkedInService {
 	clientSecret := os.Getenv("LINKEDIN_CLIENT_SECRET")
 	redirectURL := os.Getenv("LINKEDIN_REDIRECT_URL")
 
+	log.Printf("NewLinkedInService: Initializing with client_id=%s, redirect_url=%s",
+		maskString(clientID), redirectURL)
+
 	if clientID == "" || clientSecret == "" || redirectURL == "" {
+		log.Printf("NewLinkedInService: ERROR - Missing environment variables. client_id=%t, client_secret=%t, redirect_url=%t",
+			clientID != "", clientSecret != "", redirectURL != "")
 		panic("LinkedIn OAuth credentials not configured. Please set LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET, and LINKEDIN_REDIRECT_URL environment variables.")
 	}
 
@@ -35,30 +41,85 @@ func NewLinkedInService() *LinkedInService {
 		ClientSecret: clientSecret,
 		RedirectURL:  redirectURL,
 		Scopes: []string{
-			"r_liteprofile",
-			"r_emailaddress",
-			"r_basicprofile",
+			"openid",
+			"profile",
+			"email",
 			"w_member_social",
 		},
 		Endpoint: linkedin.Endpoint,
 	}
+
+	log.Printf("NewLinkedInService: Successfully initialized LinkedIn service with redirect_url=%s", redirectURL)
 
 	return &LinkedInService{
 		config: config,
 	}
 }
 
+// maskString masks sensitive data for logging
+func maskString(s string) string {
+	if len(s) <= 4 {
+		return "***"
+	}
+	return s[:4] + "***"
+}
+
 // GetAuthURL generates the LinkedIn OAuth authorization URL
-func (s *LinkedInService) GetAuthURL(state string) string {
-	return s.config.AuthCodeURL(state, oauth2.AccessTypeOffline)
+func (s *LinkedInService) GetAuthURL(state string, redirectURL string) string {
+	// Use provided redirect URL if available, otherwise use the default from config
+	effectiveRedirectURL := s.config.RedirectURL
+	if redirectURL != "" {
+		effectiveRedirectURL = redirectURL
+		log.Printf("GetAuthURL: Using custom redirect URL: %s", effectiveRedirectURL)
+	} else {
+		log.Printf("GetAuthURL: Using default redirect URL: %s", effectiveRedirectURL)
+	}
+
+	log.Printf("GetAuthURL: Generating auth URL with state=%s, redirect_url=%s", state, effectiveRedirectURL)
+
+	// Create a temporary config with the custom redirect URL
+	tempConfig := &oauth2.Config{
+		ClientID:     s.config.ClientID,
+		ClientSecret: s.config.ClientSecret,
+		RedirectURL:  effectiveRedirectURL,
+		Scopes:       s.config.Scopes,
+		Endpoint:     s.config.Endpoint,
+	}
+
+	authURL := tempConfig.AuthCodeURL(state, oauth2.AccessTypeOffline)
+	log.Printf("GetAuthURL: Generated auth URL: %s", authURL)
+	return authURL
 }
 
 // ExchangeCodeForToken exchanges authorization code for access token
-func (s *LinkedInService) ExchangeCodeForToken(code string) (*models.LinkedInAuthResponse, error) {
-	token, err := s.config.Exchange(oauth2.NoContext, code)
+func (s *LinkedInService) ExchangeCodeForToken(code string, redirectURL string) (*models.LinkedInAuthResponse, error) {
+	// Use provided redirect URL if available, otherwise use the default from config
+	effectiveRedirectURL := s.config.RedirectURL
+	if redirectURL != "" {
+		effectiveRedirectURL = redirectURL
+		log.Printf("ExchangeCodeForToken: Using custom redirect URL: %s", effectiveRedirectURL)
+	} else {
+		log.Printf("ExchangeCodeForToken: Using default redirect URL: %s", effectiveRedirectURL)
+	}
+
+	log.Printf("ExchangeCodeForToken: Attempting to exchange code, length=%d, redirect_url=%s", len(code), effectiveRedirectURL)
+
+	// Create a temporary config with the custom redirect URL
+	tempConfig := &oauth2.Config{
+		ClientID:     s.config.ClientID,
+		ClientSecret: s.config.ClientSecret,
+		RedirectURL:  effectiveRedirectURL,
+		Scopes:       s.config.Scopes,
+		Endpoint:     s.config.Endpoint,
+	}
+
+	token, err := tempConfig.Exchange(oauth2.NoContext, code)
 	if err != nil {
+		log.Printf("ExchangeCodeForToken: ERROR - Failed to exchange code: %v", err)
 		return nil, fmt.Errorf("failed to exchange code for token: %w", err)
 	}
+
+	log.Printf("ExchangeCodeForToken: Successfully exchanged code for token, expires_in=%d", int(token.Expiry.Sub(time.Now()).Seconds()))
 
 	return &models.LinkedInAuthResponse{
 		AccessToken:  token.AccessToken,
@@ -70,8 +131,10 @@ func (s *LinkedInService) ExchangeCodeForToken(code string) (*models.LinkedInAut
 
 // GetUserProfile fetches the user's LinkedIn profile data and converts it to resume format
 func (s *LinkedInService) GetUserProfile(accessToken string) (*models.ResumeModel, error) {
-	// First, get basic profile information
-	profileURL := "https://api.linkedin.com/v2/me"
+	log.Println("GetUserProfile: Fetching user profile from LinkedIn UserInfo endpoint")
+
+	// Get basic profile information from OpenID Connect UserInfo endpoint
+	profileURL := "https://api.linkedin.com/v2/userinfo"
 	req, err := http.NewRequest("GET", profileURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
@@ -92,10 +155,19 @@ func (s *LinkedInService) GetUserProfile(accessToken string) (*models.ResumeMode
 		return nil, fmt.Errorf("LinkedIn API error: %s - %s", resp.Status, string(body))
 	}
 
-	var profileData map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&profileData); err != nil {
-		return nil, fmt.Errorf("failed to decode profile response: %w", err)
+	var ui struct {
+		Sub        string `json:"sub"`
+		Name       string `json:"name"`
+		GivenName  string `json:"given_name"`
+		FamilyName string `json:"family_name"`
+		Picture    string `json:"picture"`
+		Email      string `json:"email"`
 	}
+	if err := json.NewDecoder(resp.Body).Decode(&ui); err != nil {
+		return nil, fmt.Errorf("failed to decode userinfo response: %w", err)
+	}
+
+	log.Printf("GetUserProfile: Successfully fetched profile for user: %s (sub: %s)", ui.Name, ui.Sub)
 
 	// Create resume from LinkedIn profile data
 	resume := &models.ResumeModel{
@@ -105,26 +177,27 @@ func (s *LinkedInService) GetUserProfile(accessToken string) (*models.ResumeMode
 		Theme:    "blue",
 	}
 
-	// Extract basic profile information
-	firstName := extractString(profileData, "localizedFirstName")
-	lastName := extractString(profileData, "localizedLastName")
-	profileURLStr := fmt.Sprintf("https://www.linkedin.com/in/%s", extractString(profileData, "vanityName"))
+	// Use struct fields for profile information
+	resume.FullName = ui.Name
+	resume.LinkedIn = fmt.Sprintf("https://www.linkedin.com/in/%s", ui.Sub)
+	resume.Email = ui.Email
 
-	resume.FullName = firstName + " " + lastName
-	resume.LinkedIn = profileURLStr
-
-	// Get additional profile information and populate resume
-	if err := s.populateResumeFromLinkedIn(resume, accessToken); err != nil {
-		return nil, fmt.Errorf("failed to populate resume from LinkedIn: %w", err)
+	// Set basic summary from available data
+	if ui.GivenName != "" && ui.FamilyName != "" {
+		resume.Summary = fmt.Sprintf("Professional profile for %s %s", ui.GivenName, ui.FamilyName)
+	} else {
+		resume.Summary = fmt.Sprintf("Professional profile for %s", ui.Name)
 	}
+
+	log.Printf("GetUserProfile: Created resume with basic information - Name: %s, Email: %s", resume.FullName, resume.Email)
 
 	return resume, nil
 }
 
 // populateResumeFromLinkedIn fetches additional profile information and populates resume
 func (s *LinkedInService) populateResumeFromLinkedIn(resume *models.ResumeModel, accessToken string) error {
-	// Get profile with additional fields
-	profileURL := "https://api.linkedin.com/v2/me?projection=(id,localizedFirstName,localizedLastName,profilePicture(displayImage~:playableStreams),headline,summary,location,industry,positions,educations,skills,certifications,languages,volunteer,publications,projects,honors,organizations)"
+	// Get profile with additional fields - using a more basic projection that works with r_liteprofile
+	profileURL := "https://api.linkedin.com/v2/me?projection=(id,localizedFirstName,localizedLastName,headline,summary,location,industry)"
 
 	req, err := http.NewRequest("GET", profileURL, nil)
 	if err != nil {
@@ -158,68 +231,10 @@ func (s *LinkedInService) populateResumeFromLinkedIn(resume *models.ResumeModel,
 		resume.Address = extractString(location, "name")
 	}
 
-	// Extract positions (experience) and convert to resume format
-	if positions, ok := detailedProfile["positions"].(map[string]interface{}); ok {
-		if elements, ok := positions["elements"].([]interface{}); ok {
-			experience := s.convertLinkedInPositionsToResumeExperience(elements)
-			experienceData, _ := json.Marshal(experience)
-			resume.Experience = string(experienceData)
-		}
-	}
-
-	// Extract education and convert to resume format
-	if educations, ok := detailedProfile["educations"].(map[string]interface{}); ok {
-		if elements, ok := educations["elements"].([]interface{}); ok {
-			education := s.convertLinkedInEducationToResumeEducation(elements)
-			educationData, _ := json.Marshal(education)
-			resume.Education = string(educationData)
-		}
-	}
-
-	// Extract skills and convert to resume format
-	if skills, ok := detailedProfile["skills"].(map[string]interface{}); ok {
-		if elements, ok := skills["elements"].([]interface{}); ok {
-			resumeSkills := s.convertLinkedInSkillsToResumeSkills(elements)
-			skillsData, _ := json.Marshal(resumeSkills)
-			resume.Skills = string(skillsData)
-		}
-	}
-
-	// Extract certifications and convert to resume format
-	if certifications, ok := detailedProfile["certifications"].(map[string]interface{}); ok {
-		if elements, ok := certifications["elements"].([]interface{}); ok {
-			certifications := s.convertLinkedInCertificationsToResumeCertifications(elements)
-			certificationsData, _ := json.Marshal(certifications)
-			resume.Certifications = string(certificationsData)
-		}
-	}
-
-	// Extract languages and convert to resume format
-	if languages, ok := detailedProfile["languages"].(map[string]interface{}); ok {
-		if elements, ok := languages["elements"].([]interface{}); ok {
-			languages := s.convertLinkedInLanguagesToResumeLanguages(elements)
-			languagesData, _ := json.Marshal(languages)
-			resume.Languages = string(languagesData)
-		}
-	}
-
-	// Extract projects and convert to resume format
-	if projects, ok := detailedProfile["projects"].(map[string]interface{}); ok {
-		if elements, ok := projects["elements"].([]interface{}); ok {
-			projects := s.convertLinkedInProjectsToResumeProjects(elements)
-			projectsData, _ := json.Marshal(projects)
-			resume.Projects = string(projectsData)
-		}
-	}
-
-	// Extract honors/awards and convert to resume format
-	if honors, ok := detailedProfile["honors"].(map[string]interface{}); ok {
-		if elements, ok := honors["elements"].([]interface{}); ok {
-			awards := s.convertLinkedInHonorsToResumeAwards(elements)
-			awardsData, _ := json.Marshal(awards)
-			resume.Awards = string(awardsData)
-		}
-	}
+	// Note: With r_liteprofile scope, we can only access basic profile information
+	// Detailed data like positions, education, skills, etc. require additional permissions
+	// that may not be approved for all apps. For now, we'll create a basic resume
+	// with the information we can access.
 
 	return nil
 }

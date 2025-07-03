@@ -57,6 +57,33 @@ export interface RefreshTokenResponse {
   token: string;
 }
 
+// LinkedIn authentication types
+export interface LinkedInAuthRequest {
+  code: string;
+  state?: string;
+}
+
+export interface LinkedInAuthResponse {
+  user: {
+    id: number;
+    name: string;
+    email: string;
+  };
+  resume: {
+    id: number;
+    title: string;
+    full_name: string;
+    summary: string;
+    linkedin: string;
+  };
+}
+
+export interface LinkedInAuthURLResponse {
+  auth_url: string;
+  state: string;
+  user_id?: string;
+}
+
 // Common query parameters
 export interface PaginationParams {
   page?: number;
