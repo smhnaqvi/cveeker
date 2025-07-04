@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import FormProvider from "../../../../provider/FormProvider";
 import { RHFInput as Input } from "../../../../components/Input";
 import Button from "../../../../components/Button";
-import { Add, Delete, ExpandMore, Print } from "@mui/icons-material";
+import { Add, Delete, ExpandMore } from "@mui/icons-material";
 import { useRef } from "react";
 import ResumePreview from "../../../../components/ResumePreview2";
 import ThemeSelector from "../../../../components/ThemeSelector";
@@ -519,8 +519,6 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
                     <Grid size={12}><Input name="awards" label="Awards" type="text" multiline rows={2} /></Grid>
                     <Grid size={12}><Input name="interests" label="Interests" type="text" multiline rows={2} /></Grid>
                     <Grid size={12}><Input name="references" label="References" type="text" multiline rows={2} /></Grid>
-                    <Grid size={6}><Input name="template" label="Template" type="text" /></Grid>
-                    <Grid size={6}><Input name="theme" label="Theme" type="text" /></Grid>
                   </Grid>
                 </CardContent>
               </Card>
@@ -537,13 +535,6 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
               </LoadingButton>
             </Stack>
           </FormProvider>
-          <Button 
-            variant="outlined" 
-            sx={{ mt: 2 }}
-            startIcon={<Print />}
-          >
-            Print Resume
-          </Button>
         </Grid>
         <Grid size={7}>
           <Stack marginBottom={2}>
