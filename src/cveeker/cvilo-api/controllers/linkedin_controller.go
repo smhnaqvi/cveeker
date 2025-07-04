@@ -201,15 +201,75 @@ func (lc *LinkedInController) HandleCallback(c *gin.Context) {
 		log.Println("HandleCallback: Successfully created new LinkedIn auth")
 	}
 
-	// Create resume from LinkedIn data
-	log.Println("HandleCallback: Creating resume from LinkedIn data")
-	resume.UserID = user.ID
-	if err := resume.Create(); err != nil {
-		log.Printf("HandleCallback: ERROR - Failed to create resume from LinkedIn data: %v", err)
-		utils.InternalError(c, "Failed to create resume from LinkedIn data", err.Error())
-		return
+	// Check if user already has resumes and handle accordingly
+	log.Println("HandleCallback: Checking for existing resumes")
+	existingResumes, err := (&models.ResumeModel{}).GetResumesByUserID(user.ID)
+	if err != nil {
+		log.Printf("HandleCallback: No existing resumes found for user ID: %d", user.ID)
+		// No existing resumes, create new one
+		log.Println("HandleCallback: Creating new resume from LinkedIn data")
+		resume.UserID = user.ID
+		resume.Title = "LinkedIn Profile - " + resume.FullName
+		if err := resume.Create(); err != nil {
+			log.Printf("HandleCallback: ERROR - Failed to create resume from LinkedIn data: %v", err)
+			utils.InternalError(c, "Failed to create resume from LinkedIn data", err.Error())
+			return
+		}
+		log.Printf("HandleCallback: Successfully created new resume with ID: %d", resume.ID)
+	} else {
+		log.Printf("HandleCallback: Found %d existing resumes for user ID: %d", len(existingResumes), user.ID)
+
+		// Check if there's already a resume created from LinkedIn (check by title pattern)
+		var linkedInResume *models.ResumeModel
+		for i := range existingResumes {
+			if strings.Contains(existingResumes[i].Title, "LinkedIn Profile") {
+				linkedInResume = &existingResumes[i]
+				break
+			}
+		}
+
+		if linkedInResume != nil {
+			// Update existing LinkedIn resume
+			log.Printf("HandleCallback: Updating existing LinkedIn resume with ID: %d", linkedInResume.ID)
+			linkedInResume.FullName = resume.FullName
+			linkedInResume.Email = resume.Email
+			linkedInResume.Phone = resume.Phone
+			linkedInResume.Address = resume.Address
+			linkedInResume.Website = resume.Website
+			linkedInResume.LinkedIn = resume.LinkedIn
+			linkedInResume.GitHub = resume.GitHub
+			linkedInResume.Summary = resume.Summary
+			linkedInResume.Objective = resume.Objective
+			linkedInResume.Experience = resume.Experience
+			linkedInResume.Education = resume.Education
+			linkedInResume.Skills = resume.Skills
+			linkedInResume.Languages = resume.Languages
+			linkedInResume.Certifications = resume.Certifications
+			linkedInResume.Projects = resume.Projects
+			linkedInResume.Awards = resume.Awards
+			linkedInResume.Interests = resume.Interests
+			linkedInResume.References = resume.References
+
+			if err := linkedInResume.UpdateResume(linkedInResume.ID, *linkedInResume); err != nil {
+				log.Printf("HandleCallback: ERROR - Failed to update existing LinkedIn resume: %v", err)
+				utils.InternalError(c, "Failed to update existing LinkedIn resume", err.Error())
+				return
+			}
+			log.Printf("HandleCallback: Successfully updated existing LinkedIn resume with ID: %d", linkedInResume.ID)
+			resume.ID = linkedInResume.ID // Use the updated resume ID for the rest of the function
+		} else {
+			// Create new LinkedIn resume since none exists
+			log.Println("HandleCallback: Creating new LinkedIn resume (no existing LinkedIn resume found)")
+			resume.UserID = user.ID
+			resume.Title = "LinkedIn Profile - " + resume.FullName
+			if err := resume.Create(); err != nil {
+				log.Printf("HandleCallback: ERROR - Failed to create resume from LinkedIn data: %v", err)
+				utils.InternalError(c, "Failed to create resume from LinkedIn data", err.Error())
+				return
+			}
+			log.Printf("HandleCallback: Successfully created new LinkedIn resume with ID: %d", resume.ID)
+		}
 	}
-	log.Printf("HandleCallback: Successfully created resume with ID: %d", resume.ID)
 
 	// Update user with LinkedIn data if fields are empty
 	log.Println("HandleCallback: Checking if user profile needs updates")
