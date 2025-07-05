@@ -1,5 +1,5 @@
 import { useEffect,useState } from "react";
-import { Box, Stack, Typography, IconButton, Grid, Checkbox, FormControlLabel, Card, CardHeader, CardContent, Accordion, AccordionSummary, AccordionDetails, Alert, CircularProgress } from "@mui/material";
+import { Box, Stack, Typography, IconButton, Grid, Checkbox, FormControlLabel, Card, CardHeader, CardContent, Accordion, AccordionSummary, AccordionDetails, Alert, CircularProgress, Dialog } from "@mui/material";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -8,8 +8,7 @@ import FormProvider from "../../../../provider/FormProvider";
 import { RHFInput as Input } from "../../../../components/Input";
 import Button from "../../../../components/Button";
 import { Add, Delete, ExpandMore } from "@mui/icons-material";
-import { useRef } from "react";
-import ResumePreview from "../../../../components/ResumePreview2";
+import MultiPageResumePreview from "../../../../components/MultiPageResumePreview";
 import ThemeSelector from "../../../../components/ThemeSelector";
 import { useCreateResumeFromForm } from "../../../../lib/hooks/useResumes";
 import type { ResumeFormData } from "../../../../lib/services";
@@ -114,7 +113,6 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
     defaultValues: resume,
   });
   const watchAll = methods.watch();
-  const previewRef = useRef<HTMLDivElement>(null);
   
   // Dynamic fields
   const expArray = useFieldArray({ control: methods.control, name: "experience" });
@@ -178,7 +176,8 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
   }, [notification]);
 
   return (
-    <Box maxWidth={1200} mx="auto" mt={4} mb={8}>
+    <Dialog open={true} onClose={() => {}} fullScreen>
+    <Box p={4}>
       {/* Notification */}
       {notification && (
         <Alert 
@@ -211,16 +210,16 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
                 <CardHeader title="Basic Info" />
                 <CardContent>
                   <Grid container spacing={2}>
-                    <Grid size={12}><Input type="text" name="title" label="Resume Title" /></Grid>
-                    <Grid size={12}><Input name="fullName" label="Full Name" type="text" /></Grid>
-                    <Grid size={12}><Input name="email" label="Email" type="email" /></Grid>
-                    <Grid size={12}><Input name="phone" label="Phone" type="text" /></Grid>
-                    <Grid size={12}><Input name="address" label="Address" type="text" /></Grid>
-                    <Grid size={12}><Input name="website" label="Website" type="text" /></Grid>
-                    <Grid size={12}><Input name="linkedin" label="LinkedIn" type="text" /></Grid>
-                    <Grid size={12}><Input name="github" label="GitHub" type="text" /></Grid>
-                    <Grid size={12}><Input name="summary" label="Professional Summary" type="text" multiline rows={2} /></Grid>
-                    <Grid size={12}><Input name="objective" label="Objective" type="text" multiline rows={2} /></Grid>
+                    <Grid size={12}><Input type="text" name="title" label="Resume Title" maxLength={100} /></Grid>
+                    <Grid size={12}><Input name="fullName" label="Full Name" type="text" maxLength={100} /></Grid>
+                    <Grid size={12}><Input name="email" label="Email" type="email" maxLength={100} /></Grid>
+                    <Grid size={12}><Input name="phone" label="Phone" type="text" maxLength={20} /></Grid>
+                    <Grid size={12}><Input name="address" label="Address" type="text" maxLength={200} /></Grid>
+                    <Grid size={12}><Input name="website" label="Website" type="text" maxLength={200} /></Grid>
+                    <Grid size={12}><Input name="linkedin" label="LinkedIn" type="text" maxLength={200} /></Grid>
+                    <Grid size={12}><Input name="github" label="GitHub" type="text" maxLength={200} /></Grid>
+                    <Grid size={12}><Input name="summary" label="Professional Summary" type="text" multiline rows={5} maxLength={500} /></Grid>
+                    <Grid size={12}><Input name="objective" label="Objective" type="text" multiline rows={5} maxLength={300} /></Grid>
                   </Grid>
                 </CardContent>
               </Card>
@@ -254,8 +253,8 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
                             <Grid size={6}><Input name={`experience.${idx}.location`} label="Location" type="text" /></Grid>
                             <Grid size={3}><Input name={`experience.${idx}.startDate`} label="Start Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
                             <Grid size={3}><Input name={`experience.${idx}.endDate`} label="End Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
-                            <Grid size={6}><Input name={`experience.${idx}.description`} label="Description" type="text" multiline rows={2} /></Grid>
-                            <Grid size={6}><Input name={`experience.${idx}.technologies`} label="Technologies (comma separated)" type="text" multiline rows={2} /></Grid>
+                            <Grid size={6}><Input name={`experience.${idx}.description`} label="Description" type="text" multiline rows={2} maxLength={300} /></Grid>
+                            <Grid size={6}><Input name={`experience.${idx}.technologies`} label="Technologies (comma separated)" type="text" multiline rows={2} maxLength={200} /></Grid>
                             <Grid size={3}><FormControlLabel control={<Checkbox {...methods.register(`experience.${idx}.isCurrent`)} />} label="Current Job" /></Grid>
                           </Grid>
                         </AccordionDetails>
@@ -308,7 +307,7 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
                             <Grid size={3}><Input name={`education.${idx}.startDate`} label="Start Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
                             <Grid size={3}><Input name={`education.${idx}.endDate`} label="End Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
                             <Grid size={6}><Input name={`education.${idx}.gpa`} label="GPA" type="text" /></Grid>
-                            <Grid size={12}><Input name={`education.${idx}.description`} label="Description" type="text" multiline rows={2} /></Grid>
+                            <Grid size={12}><Input name={`education.${idx}.description`} label="Description" type="text" multiline rows={2} maxLength={250} /></Grid>
                           </Grid>
                         </AccordionDetails>
                       </Accordion>
@@ -486,8 +485,8 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
                         <AccordionDetails>
                           <Grid container spacing={2} alignItems="center">
                             <Grid size={12}><Input name={`projects.${idx}.name`} label="Project Name" type="text" /></Grid>
-                            <Grid size={12}><Input name={`projects.${idx}.description`} label="Description" type="text" /></Grid>
-                            <Grid size={12}><Input name={`projects.${idx}.technologies`} label="Technologies (comma separated)" type="text" /></Grid>
+                            <Grid size={12}><Input name={`projects.${idx}.description`} label="Description" type="text" multiline rows={2} maxLength={300} /></Grid>
+                            <Grid size={12}><Input name={`projects.${idx}.technologies`} label="Technologies (comma separated)" type="text" maxLength={200} /></Grid>
                             <Grid size={6}><Input name={`projects.${idx}.startDate`} label="Start Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
                             <Grid size={6}><Input name={`projects.${idx}.endDate`} label="End Date" type="date" InputLabelProps={{ shrink: true }} /></Grid>
                             <Grid size={12}><Input name={`projects.${idx}.url`} label="URL" type="text" /></Grid>
@@ -516,31 +515,38 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
                 <CardHeader title="Other Sections" />
                 <CardContent>
                   <Grid container spacing={2}>
-                    <Grid size={12}><Input name="awards" label="Awards" type="text" multiline rows={2} /></Grid>
-                    <Grid size={12}><Input name="interests" label="Interests" type="text" multiline rows={2} /></Grid>
-                    <Grid size={12}><Input name="references" label="References" type="text" multiline rows={2} /></Grid>
+                    <Grid size={12}><Input name="awards" label="Awards" type="text" multiline rows={2} maxLength={200} /></Grid>
+                    <Grid size={12}><Input name="interests" label="Interests" type="text" multiline rows={2} maxLength={150} /></Grid>
+                    <Grid size={12}><Input name="references" label="References" type="text" multiline rows={2} maxLength={100} /></Grid>
                   </Grid>
                 </CardContent>
               </Card>
-
-              <LoadingButton
-                type="submit" 
-                variant="contained" 
-                size="large"
-                loading={createResumeMutation.isPending || updateResumeMutation.isPending}
-                disabled={createResumeMutation.isPending || updateResumeMutation.isPending}
-                startIcon={createResumeMutation.isPending || updateResumeMutation.isPending ? <CircularProgress size={20} color="inherit" /> : undefined}
-              >
-                {createResumeMutation.isPending || updateResumeMutation.isPending ? 'Saving Resume...' : editMode ? 'Update Resume' : 'Create Resume'}
-              </LoadingButton>
+                <Stack position={"sticky"} bottom={0} top={0} left={0} right={0} zIndex={1000} pb={3} pt={5} sx={{ backgroundImage: 'linear-gradient(to bottom, transparent 0%, #3c4147 30px)' }}>
+                  <LoadingButton
+                    type="submit" 
+                    variant="contained" 
+                    size="large"
+                    loading={createResumeMutation.isPending || updateResumeMutation.isPending}
+                    disabled={createResumeMutation.isPending || updateResumeMutation.isPending}
+                    startIcon={createResumeMutation.isPending || updateResumeMutation.isPending ? <CircularProgress size={20} color="inherit" /> : undefined}
+                  >
+                    {createResumeMutation.isPending || updateResumeMutation.isPending ? 'Saving Resume...' : editMode ? 'Update Resume' : 'Create Resume'}
+                  </LoadingButton>
+              </Stack>
             </Stack>
           </FormProvider>
         </Grid>
         <Grid size={7}>
-          <Stack marginBottom={2}>
-            <Typography variant="h6" gutterBottom>
-              Select a Template
-            </Typography>
+            <Stack
+              sx={{
+                position: 'sticky',
+                height: 'calc(100vh - 56px)',
+                top: '24px',
+                bottom: '0',
+                width: '100%',
+              }}
+            >
+               <Stack marginBottom={2}>
             <Controller
               name="theme"
               control={methods.control}
@@ -554,26 +560,16 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
               )}
             />
           </Stack>
-          <Card ref={previewRef}
-            sx={{
-              position: 'sticky',
-              maxHeight: 'calc(100vh - 48px)',
-              top: '100px',
-              bottom: '24px',
-              overflowY: 'auto',
-            }}
-          >
-            <div id="resume-preview">
-              <ResumePreview
+              <MultiPageResumePreview
                 data={watchAll}
                 theme={watchAll.theme}
                 printMode={false}
               />
-            </div>
-          </Card>
+            </Stack>
         </Grid>
       </Grid>
     </Box>
+    </Dialog>
   );
 };
 

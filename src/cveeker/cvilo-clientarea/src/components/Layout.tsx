@@ -6,7 +6,6 @@ import {
   Toolbar,
   List,
   Typography,
-  Divider,
   IconButton,
   ListItem,
   ListItemButton,
@@ -21,15 +20,16 @@ import {
   Dashboard as DashboardIcon,
   Description as DescriptionIcon,
   Settings as SettingsIcon,
-  AccountCircle,
   ExitToApp,
   Person,
 } from '@mui/icons-material'
 import { useNavigate, useLocation } from 'react-router-dom'
 import Logo from './Logo'
 import { useAuthStore } from '../stores'
+import ResumeSidebar from './ResumeSidebar'
 
-const drawerWidth = 250
+const drawerWidth = 280
+const sidebarWidth = 320
 
 interface LayoutProps {
   children: React.ReactNode
@@ -67,53 +67,83 @@ export default function Layout({ children }: LayoutProps) {
   ]
 
   const drawer = (
-    <div>
-      <Toolbar>
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ p: 3, borderBottom: '1px solid #30363d' }}>
         <Logo />
-      </Toolbar>
-      <Divider />
-      <List>
-        {menuItems.map((item) => (
-          <ListItem key={item.text} sx={{ paddingX: 1, paddingY: 0}}>
-            <ListItemButton
-              selected={location.pathname === item.path}
-              onClick={() => navigate(item.path)}
-              sx={{
-                borderRadius: 1,
-                '&.Mui-selected': {
-                  backgroundColor: 'primary.light',
-                  color: 'primary.contrastText',
+      </Box>
+      <Box sx={{ flex: 1, p: 2 }}>
+        <List sx={{ p: 0 }}>
+          {menuItems.map((item) => (
+            <ListItem key={item.text} sx={{ p: 0, mb: 1 }}>
+              <ListItemButton
+                selected={location.pathname === item.path}
+                onClick={() => navigate(item.path)}
+                sx={{
+                  borderRadius: 2,
+                  py: 1.5,
+                  px: 2,
+                  '&.Mui-selected': {
+                    backgroundColor: 'rgba(16, 163, 127, 0.1)',
+                    color: '#10a37f',
+                    '&:hover': {
+                      backgroundColor: 'rgba(16, 163, 127, 0.15)',
+                    },
+                    '& .MuiListItemIcon-root': {
+                      color: '#10a37f',
+                    },
+                  },
                   '&:hover': {
-                    backgroundColor: 'primary.light',
+                    backgroundColor: 'rgba(255, 255, 255, 0.04)',
                   },
-                  '& .MuiListItemIcon-root': {
-                    color: 'primary.contrastText',
-                  },
-                },
-              }}
-            >
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-    </div>
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
+                <ListItemText 
+                  primary={item.text} 
+                  primaryTypographyProps={{ 
+                    fontWeight: location.pathname === item.path ? 600 : 500,
+                    fontSize: '0.875rem',
+                  }}
+                />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+      </Box>
+    </Box>
   )
 
   return (
-    <Box sx={{ display: 'flex', width: '100%' }}>
+    <Box sx={{ display: 'flex', width: '100%', bgcolor: '#0d1117' }}>
+      {/* Resume Sidebar (left, always visible) */}
+      <Box
+        sx={{
+          width: { xs: 0, sm: sidebarWidth },
+          flexShrink: 0,
+          display: { xs: 'none', sm: 'block' },
+          bgcolor: '#0d1117',
+          borderRight: '1px solid #30363d',
+          height: '100vh',
+          position: 'fixed',
+          zIndex: 1201,
+        }}
+      >
+        <ResumeSidebar />
+      </Box>
+
+      {/* Main Navigation Drawer (right of sidebar) */}
       <AppBar
         position="fixed"
         sx={{
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` },
-          backgroundColor: 'white',
-          color: 'text.primary',
-          boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
+          width: { sm: `calc(100% - ${sidebarWidth}px)` },
+          ml: { sm: `${sidebarWidth}px` },
+          backgroundColor: '#161b22',
+          color: '#f0f6fc',
+          borderBottom: '1px solid #30363d',
+          boxShadow: 'none',
         }}
       >
-        <Toolbar>
+        <Toolbar sx={{ minHeight: 64 }}>
           <IconButton
             color="inherit"
             aria-label="open drawer"
@@ -123,8 +153,8 @@ export default function Layout({ children }: LayoutProps) {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            Client Area
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
+            Dashboard
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <IconButton
@@ -135,9 +165,14 @@ export default function Layout({ children }: LayoutProps) {
               aria-haspopup="true"
               onClick={handleProfileMenuOpen}
               color="inherit"
+              sx={{
+                '&:hover': {
+                  bgcolor: 'rgba(255, 255, 255, 0.04)',
+                }
+              }}
             >
-              <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
-                <AccountCircle />
+              <Avatar sx={{ width: 36, height: 36, bgcolor: '#10a37f', fontSize: '0.875rem', fontWeight: 600 }}>
+                {user?.name?.charAt(0)?.toUpperCase() || 'U'}
               </Avatar>
             </IconButton>
           </Box>
@@ -154,13 +189,22 @@ export default function Layout({ children }: LayoutProps) {
           elevation: 0,
           sx: {
             overflow: 'visible',
-            filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.1))',
+            filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.3))',
             mt: 1.5,
+            bgcolor: '#161b22',
+            border: '1px solid #30363d',
+            borderRadius: 2,
             '& .MuiAvatar-root': {
               width: 32,
               height: 32,
               ml: -0.5,
               mr: 1,
+            },
+            '& .MuiMenuItem-root': {
+              color: '#f0f6fc',
+              '&:hover': {
+                bgcolor: 'rgba(255, 255, 255, 0.04)',
+              },
             },
           },
         }}
@@ -169,13 +213,13 @@ export default function Layout({ children }: LayoutProps) {
       >
         <MenuItem>
           <ListItemIcon>
-            <Person fontSize="small" />
+            <Person fontSize="small" sx={{ color: '#8b949e' }} />
           </ListItemIcon>
           {user?.name || 'Profile'}
         </MenuItem>
         <MenuItem onClick={handleLogout}>
           <ListItemIcon>
-            <ExitToApp fontSize="small" />
+            <ExitToApp fontSize="small" sx={{ color: '#8b949e' }} />
           </ListItemIcon>
           Logout
         </MenuItem>
@@ -183,7 +227,7 @@ export default function Layout({ children }: LayoutProps) {
 
       <Box
         component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+        sx={{ flexShrink: { sm: 0 }, ml: { sm: `${sidebarWidth}px` } }}
         aria-label="mailbox folders"
       >
         <Drawer
@@ -195,7 +239,12 @@ export default function Layout({ children }: LayoutProps) {
           }}
           sx={{
             display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            '& .MuiDrawer-paper': { 
+              boxSizing: 'border-box', 
+              width: drawerWidth,
+              bgcolor: '#0d1117',
+              borderRight: '1px solid #30363d',
+            },
           }}
         >
           {drawer}
@@ -204,7 +253,12 @@ export default function Layout({ children }: LayoutProps) {
           variant="permanent"
           sx={{
             display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            '& .MuiDrawer-paper': { 
+              boxSizing: 'border-box', 
+              width: drawerWidth,
+              bgcolor: '#0d1117',
+              borderRight: '1px solid #30363d',
+            },
           }}
           open
         >
@@ -216,9 +270,12 @@ export default function Layout({ children }: LayoutProps) {
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          mt: { xs: 7, sm: 8 },
+          p: 4,
+          width: { sm: `calc(100% - ${sidebarWidth + drawerWidth}px)` },
+          mt: { xs: 8, sm: 8 },
+          bgcolor: '#0d1117',
+          minHeight: '100vh',
+          // ml: { sm: `${sidebarWidth + drawerWidth}px` },
         }}
       >
         {children}

@@ -1,4 +1,4 @@
-import ResumePreview from "../../../components/ResumePreview2"
+import MultiPageResumePreview from "../../../components/MultiPageResumePreview"
 import { useParams, useSearchParams } from "react-router-dom"
 import { useResume } from "../../../lib/hooks/useResumes"
 import { convertResumeToFormValues } from "../../../lib/utils/resumeConverter"
@@ -61,7 +61,7 @@ const PreviewResume = () => {
     if(printMode) {
         return (
             <div id="resume-preview">
-                <ResumePreview data={formData} theme={formData.theme} printMode={true} />
+                <MultiPageResumePreview data={formData} theme={formData.theme} printMode={true} />
             </div>
         )
     }
@@ -85,7 +85,7 @@ const PreviewResume = () => {
             </Stack>
             
             <div id="resume-preview" ref={previewRef}>
-                <ResumePreview data={formData} theme={formData.theme} printMode={false} />
+                <MultiPageResumePreview data={formData} theme={formData.theme} printMode={false} />
             </div>
         </Box>
     )

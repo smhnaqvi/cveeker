@@ -47,47 +47,45 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
         color: styles.container.color,
         fontFamily: styles.container.fontFamily,
         padding: styles.container.padding,
-        borderRadius: printMode ? '0px' : styles.container.borderRadius,
-        boxShadow: printMode ? 'none' : styles.container.boxShadow,
         fontSize: styles.content.fontSize,
         lineHeight: styles.content.lineHeight,
-        minHeight: printMode ? '297mm' : '100%', // A4 height
-        width: printMode ? '210mm' : '100%', // A4 width
-        margin: printMode ? '0 auto' : '0',
-        // pageBreakAfter removed to prevent forcing a page break after the entire document
+        minHeight: '297mm', // A4 height
+        width: '210mm', // A4 width
+        margin: '0 auto',
+        // Ensure colors are preserved in both preview and print
+        '& *': {
+          fontFamily: styles.container.fontFamily,
+          '-webkit-print-color-adjust': 'exact',
+          'color-adjust': 'exact',
+          'print-color-adjust': 'exact',
+        },
         '@media print': {
           margin: '0',
           borderRadius: '0',
           boxShadow: 'none',
           minHeight: '297mm',
           width: '210mm',
-          // pageBreakAfter removed from print media to avoid extra blank page
-          // Preserve theme colors in print
           background: styles.container.backgroundColor,
           color: styles.container.color,
           '& *': {
             pageBreakInside: 'avoid',
-            // Ensure colors are preserved
             '-webkit-print-color-adjust': 'exact',
             'color-adjust': 'exact',
             'print-color-adjust': 'exact',
           },
         },
-        '& *': {
-          fontFamily: styles.container.fontFamily,
-        },
       }}
     >
       {/* Header */}
       <Box sx={{ 
-        // marginBottom: printMode ? '16px' : '24px',
-        pageBreakAfter: printMode ? 'avoid' : 'auto',
+        pageBreakAfter: 'auto',
+        pageBreakBefore: 'auto', // Don't force page break for header
       }}>
         <Typography 
           variant="h4" 
           sx={{
             color: styles.header.nameColor,
-            fontSize: printMode ? '2rem' : styles.header.nameFontSize,
+            fontSize: styles.header.nameFontSize,
             fontWeight: styles.header.nameFontWeight,
             marginBottom: '8px',
             lineHeight: '1.2',
@@ -100,7 +98,7 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
           variant="subtitle1" 
           sx={{
             color: styles.header.contactColor,
-            fontSize: printMode ? '0.9rem' : styles.header.contactFontSize,
+            fontSize: styles.header.contactFontSize,
             lineHeight: '1.4',
             pageBreakAfter: 'avoid',
           }}
@@ -112,7 +110,7 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
             variant="body2" 
             sx={{
               color: styles.header.contactColor,
-              fontSize: printMode ? '0.8rem' : styles.header.contactFontSize,
+              fontSize: styles.header.contactFontSize,
               marginTop: '4px',
               pageBreakAfter: 'avoid',
             }}
@@ -126,20 +124,24 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
 
       {/* Summary */}
       {data.summary && (
-        <Box sx={{ pageBreakAfter: printMode ? 'avoid' : 'auto' }}>
+        <Box sx={{ 
+          pageBreakAfter: 'auto',
+          pageBreakBefore: 'always',
+          marginTop: '20px'
+        }}>
           <Divider 
             sx={{ 
               borderColor: styles.section.dividerColor,
-              margin: printMode ? '12px 0' : styles.section.dividerMargin,
+              margin: styles.section.dividerMargin,
             }} 
           />
           <Typography 
             variant="h6" 
             sx={{
               color: styles.section.titleColor,
-              fontSize: printMode ? '1.1rem' : styles.section.titleFontSize,
+              fontSize: styles.section.titleFontSize,
               fontWeight: styles.section.titleFontWeight,
-              marginBottom: printMode ? '8px' : styles.section.titleMarginBottom,
+              marginBottom: styles.section.titleMarginBottom,
               pageBreakAfter: 'avoid',
             }}
           >
@@ -149,8 +151,8 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
             variant="body2" 
             sx={{
               color: styles.content.primaryColor,
-              fontSize: printMode ? '0.85rem' : styles.content.fontSize,
-              lineHeight: printMode ? '1.4' : styles.content.lineHeight,
+              fontSize: styles.content.fontSize,
+              lineHeight: styles.content.lineHeight,
               pageBreakAfter: 'avoid',
             }}
           >
@@ -161,33 +163,37 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
 
       {/* Experience */}
       {data.experience.length > 0 && (
-        <Box sx={{ pageBreakAfter: printMode ? 'avoid' : 'auto' }}>
+        <Box sx={{ 
+          pageBreakAfter: 'auto',
+          pageBreakBefore: 'always',
+          marginTop: '20px'
+        }}>
           <Divider 
             sx={{ 
               borderColor: styles.section.dividerColor,
-              margin: printMode ? '12px 0' : styles.section.dividerMargin,
+              margin: styles.section.dividerMargin,
             }} 
           />
           <Typography 
             variant="h6" 
             sx={{
               color: styles.section.titleColor,
-              fontSize: printMode ? '1.1rem' : styles.section.titleFontSize,
+              fontSize: styles.section.titleFontSize,
               fontWeight: styles.section.titleFontWeight,
-              marginBottom: printMode ? '8px' : styles.section.titleMarginBottom,
+              marginBottom: styles.section.titleMarginBottom,
               pageBreakAfter: 'avoid',
             }}
           >
             Experience
           </Typography>
-          <Stack spacing={printMode ? 1 : 2}>
+          <Stack spacing={2}>
             {data.experience.map((exp, idx) => (
               <Box key={idx} sx={{ pageBreakInside: 'avoid' }}>
                 <Typography 
                   variant="subtitle1" 
                   sx={{
                     color: styles.content.primaryColor,
-                    fontSize: printMode ? '0.9rem' : styles.content.fontSize,
+                    fontSize: styles.content.fontSize,
                     fontWeight: '600',
                     marginBottom: '4px',
                     pageBreakAfter: 'avoid',
@@ -200,7 +206,7 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
                   variant="caption" 
                   sx={{
                     color: styles.content.secondaryColor,
-                    fontSize: printMode ? '0.75rem' : '0.8rem',
+                    fontSize: '0.8rem',
                     display: 'block',
                     marginBottom: '6px',
                     pageBreakAfter: 'avoid',
@@ -214,8 +220,8 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
                   variant="body2" 
                   sx={{
                     color: styles.content.primaryColor,
-                    fontSize: printMode ? '0.8rem' : styles.content.fontSize,
-                    lineHeight: printMode ? '1.3' : styles.content.lineHeight,
+                    fontSize: styles.content.fontSize,
+                    lineHeight: styles.content.lineHeight,
                     marginBottom: '4px',
                     pageBreakAfter: 'avoid',
                   }}
@@ -228,7 +234,7 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
                     variant="body2" 
                     sx={{
                       color: styles.content.accentColor,
-                      fontSize: printMode ? '0.75rem' : '0.85rem',
+                      fontSize: '0.85rem',
                       fontStyle: 'italic',
                       pageBreakAfter: 'avoid',
                     }}
@@ -245,33 +251,37 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
 
       {/* Education */}
       {data.education.length > 0 && (
-        <Box sx={{ pageBreakAfter: printMode ? 'avoid' : 'auto' }}>
+        <Box sx={{ 
+          pageBreakAfter: 'auto',
+          pageBreakBefore: 'always',
+          marginTop: '20px'
+        }}>
           <Divider 
             sx={{ 
               borderColor: styles.section.dividerColor,
-              margin: printMode ? '12px 0' : styles.section.dividerMargin,
+              margin: styles.section.dividerMargin,
             }} 
           />
           <Typography 
             variant="h6" 
             sx={{
               color: styles.section.titleColor,
-              fontSize: printMode ? '1.1rem' : styles.section.titleFontSize,
+              fontSize: styles.section.titleFontSize,
               fontWeight: styles.section.titleFontWeight,
-              marginBottom: printMode ? '8px' : styles.section.titleMarginBottom,
+              marginBottom: styles.section.titleMarginBottom,
               pageBreakAfter: 'avoid',
             }}
           >
             Education
           </Typography>
-          <Stack spacing={printMode ? 1 : 2}>
+          <Stack spacing={2}>
             {data.education.map((edu, idx) => (
               <Box key={idx} sx={{ pageBreakInside: 'avoid' }}>
                 <Typography 
                   variant="subtitle1" 
                   sx={{
                     color: styles.content.primaryColor,
-                    fontSize: printMode ? '0.9rem' : styles.content.fontSize,
+                    fontSize: styles.content.fontSize,
                     fontWeight: '600',
                     marginBottom: '4px',
                     pageBreakAfter: 'avoid',
@@ -285,7 +295,7 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
                   variant="caption" 
                   sx={{
                     color: styles.content.secondaryColor,
-                    fontSize: printMode ? '0.75rem' : '0.8rem',
+                    fontSize: '0.8rem',
                     display: 'block',
                     marginBottom: '6px',
                     pageBreakAfter: 'avoid',
@@ -300,8 +310,8 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
                   variant="body2" 
                   sx={{
                     color: styles.content.primaryColor,
-                    fontSize: printMode ? '0.8rem' : styles.content.fontSize,
-                    lineHeight: printMode ? '1.3' : styles.content.lineHeight,
+                    fontSize: styles.content.fontSize,
+                    lineHeight: styles.content.lineHeight,
                     pageBreakAfter: 'avoid',
                   }}
                   className="content-primary"
@@ -316,26 +326,30 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
 
       {/* Skills */}
       {data.skills.length > 0 && (
-        <Box sx={{ pageBreakAfter: printMode ? 'avoid' : 'auto' }}>
+        <Box sx={{ 
+          pageBreakAfter: 'auto',
+          pageBreakBefore: 'always',
+          marginTop: '20px'
+        }}>
           <Divider 
             sx={{ 
               borderColor: styles.section.dividerColor,
-              margin: printMode ? '12px 0' : styles.section.dividerMargin,
+              margin: styles.section.dividerMargin,
             }} 
           />
           <Typography 
             variant="h6" 
             sx={{
               color: styles.section.titleColor,
-              fontSize: printMode ? '1.1rem' : styles.section.titleFontSize,
+              fontSize: styles.section.titleFontSize,
               fontWeight: styles.section.titleFontWeight,
-              marginBottom: printMode ? '8px' : styles.section.titleMarginBottom,
+              marginBottom: styles.section.titleMarginBottom,
               pageBreakAfter: 'avoid',
             }}
           >
             Skills
           </Typography>
-          <Stack direction="row" flexWrap="wrap" spacing={printMode ? 0.5 : 1}>
+          <Stack direction="row" flexWrap="wrap" spacing={1}>
             {data.skills.map((skill, idx) => (
               <Chip 
                 key={idx} 
@@ -344,11 +358,11 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
                   backgroundColor: styles.chip.backgroundColor,
                   color: styles.chip.color,
                   borderColor: styles.chip.borderColor,
-                  fontSize: printMode ? '0.7rem' : '0.8rem',
-                  height: printMode ? '24px' : '28px',
-                  margin: printMode ? '2px' : '0',
+                  fontSize: '0.8rem',
+                  height: '28px',
+                  margin: '0',
                   '& .MuiChip-label': {
-                    fontSize: printMode ? '0.7rem' : '0.8rem',
+                    fontSize: '0.8rem',
                   },
                 }}
                 variant={styles.chip.borderColor ? "outlined" : "filled"}
@@ -360,34 +374,38 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
 
       {/* Languages */}
       {data.languages.length > 0 && (
-        <Box sx={{ pageBreakAfter: printMode ? 'avoid' : 'auto' }}>
+        <Box sx={{ 
+          pageBreakAfter: 'auto',
+          pageBreakBefore: 'always',
+          marginTop: '20px'
+        }}>
           <Divider 
             sx={{ 
               borderColor: styles.section.dividerColor,
-              margin: printMode ? '12px 0' : styles.section.dividerMargin,
+              margin: styles.section.dividerMargin,
             }} 
           />
           <Typography 
             variant="h6" 
             sx={{
               color: styles.section.titleColor,
-              fontSize: printMode ? '1.1rem' : styles.section.titleFontSize,
+              fontSize: styles.section.titleFontSize,
               fontWeight: styles.section.titleFontWeight,
-              marginBottom: printMode ? '8px' : styles.section.titleMarginBottom,
+              marginBottom: styles.section.titleMarginBottom,
               pageBreakAfter: 'avoid',
             }}
           >
             Languages
           </Typography>
-          <Stack spacing={printMode ? 0.5 : 1}>
+          <Stack spacing={1}>
             {data.languages.map((lang, idx) => (
               <Typography 
                 key={idx} 
                 variant="body2" 
                 sx={{
                   color: styles.content.primaryColor,
-                  fontSize: printMode ? '0.8rem' : styles.content.fontSize,
-                  lineHeight: printMode ? '1.3' : styles.content.lineHeight,
+                  fontSize: styles.content.fontSize,
+                  lineHeight: styles.content.lineHeight,
                   pageBreakAfter: 'avoid',
                 }}
               >
@@ -400,33 +418,37 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
 
       {/* Certifications */}
       {data.certifications.length > 0 && (
-        <Box sx={{ pageBreakAfter: printMode ? 'avoid' : 'auto' }}>
+        <Box sx={{ 
+          pageBreakAfter: 'auto',
+          pageBreakBefore: 'always',
+          marginTop: '20px'
+        }}>
           <Divider 
             sx={{ 
               borderColor: styles.section.dividerColor,
-              margin: printMode ? '12px 0' : styles.section.dividerMargin,
+              margin: styles.section.dividerMargin,
             }} 
           />
           <Typography 
             variant="h6" 
             sx={{
               color: styles.section.titleColor,
-              fontSize: printMode ? '1.1rem' : styles.section.titleFontSize,
+              fontSize: styles.section.titleFontSize,
               fontWeight: styles.section.titleFontWeight,
-              marginBottom: printMode ? '8px' : styles.section.titleMarginBottom,
+              marginBottom: styles.section.titleMarginBottom,
               pageBreakAfter: 'avoid',
             }}
           >
             Certifications
           </Typography>
-          <Stack spacing={printMode ? 0.5 : 1}>
+          <Stack spacing={1}>
             {data.certifications.map((cert, idx) => (
               <Box key={idx} sx={{ pageBreakInside: 'avoid' }}>
                 <Typography 
                   variant="subtitle2" 
                   sx={{
                     color: styles.content.primaryColor,
-                    fontSize: printMode ? '0.85rem' : styles.content.fontSize,
+                    fontSize: styles.content.fontSize,
                     fontWeight: '600',
                     marginBottom: '2px',
                     pageBreakAfter: 'avoid',
@@ -439,7 +461,7 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
                     variant="caption" 
                     sx={{
                       color: styles.content.secondaryColor,
-                      fontSize: printMode ? '0.7rem' : '0.8rem',
+                      fontSize: '0.8rem',
                       display: 'block',
                       marginBottom: '2px',
                       pageBreakAfter: 'avoid',
@@ -452,7 +474,7 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
                   variant="body2" 
                   sx={{
                     color: styles.content.secondaryColor,
-                    fontSize: printMode ? '0.75rem' : '0.85rem',
+                    fontSize: '0.85rem',
                     pageBreakAfter: 'avoid',
                   }}
                 >
@@ -468,33 +490,37 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
 
       {/* Projects */}
       {data.projects.length > 0 && (
-        <Box sx={{ pageBreakAfter: printMode ? 'avoid' : 'auto' }}>
+        <Box sx={{ 
+          pageBreakAfter: 'auto',
+          pageBreakBefore: 'always',
+          marginTop: '20px'
+        }}>
           <Divider 
             sx={{ 
               borderColor: styles.section.dividerColor,
-              margin: printMode ? '12px 0' : styles.section.dividerMargin,
+              margin: styles.section.dividerMargin,
             }} 
           />
           <Typography 
             variant="h6" 
             sx={{
               color: styles.section.titleColor,
-              fontSize: printMode ? '1.1rem' : styles.section.titleFontSize,
+              fontSize: styles.section.titleFontSize,
               fontWeight: styles.section.titleFontWeight,
-              marginBottom: printMode ? '8px' : styles.section.titleMarginBottom,
+              marginBottom: styles.section.titleMarginBottom,
               pageBreakAfter: 'avoid',
             }}
           >
             Projects
           </Typography>
-          <Stack spacing={printMode ? 1 : 2}>
+          <Stack spacing={2}>
             {data.projects.map((proj, idx) => (
               <Box key={idx} sx={{ pageBreakInside: 'avoid' }}>
                 <Typography 
                   variant="subtitle1" 
                   sx={{
                     color: styles.content.primaryColor,
-                    fontSize: printMode ? '0.9rem' : styles.content.fontSize,
+                    fontSize: styles.content.fontSize,
                     fontWeight: '600',
                     marginBottom: '4px',
                     pageBreakAfter: 'avoid',
@@ -507,8 +533,8 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
                   variant="body2" 
                   sx={{
                     color: styles.content.primaryColor,
-                    fontSize: printMode ? '0.8rem' : styles.content.fontSize,
-                    lineHeight: printMode ? '1.3' : styles.content.lineHeight,
+                    fontSize: styles.content.fontSize,
+                    lineHeight: styles.content.lineHeight,
                     marginBottom: '4px',
                     pageBreakAfter: 'avoid',
                   }}
@@ -521,7 +547,7 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
                     variant="body2" 
                     sx={{
                       color: styles.content.accentColor,
-                      fontSize: printMode ? '0.75rem' : '0.85rem',
+                      fontSize: '0.85rem',
                       fontStyle: 'italic',
                       marginBottom: '4px',
                       pageBreakAfter: 'avoid',
@@ -536,7 +562,7 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
                     variant="caption" 
                     sx={{
                       color: styles.content.secondaryColor,
-                      fontSize: printMode ? '0.7rem' : '0.8rem',
+                      fontSize: '0.8rem',
                       pageBreakAfter: 'avoid',
                     }}
                     className="content-secondary"
@@ -554,22 +580,26 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
 
       {/* Other Sections */}
       {(data.awards || data.interests || data.references) && (
-        <Box sx={{ pageBreakAfter: printMode ? 'avoid' : 'auto' }}>
+        <Box sx={{ 
+          pageBreakAfter: 'auto',
+          pageBreakBefore: 'always',
+          marginTop: '20px'
+        }}>
           <Divider 
             sx={{ 
               borderColor: styles.section.dividerColor,
-              margin: printMode ? '12px 0' : styles.section.dividerMargin,
+              margin: styles.section.dividerMargin,
             }} 
           />
           {data.awards && (
-            <Box sx={{ pageBreakAfter: printMode ? 'avoid' : 'auto' }}>
+            <Box sx={{ pageBreakAfter: 'auto' }}>
               <Typography 
                 variant="h6" 
                 sx={{
                   color: styles.section.titleColor,
-                  fontSize: printMode ? '1.1rem' : styles.section.titleFontSize,
+                  fontSize: styles.section.titleFontSize,
                   fontWeight: styles.section.titleFontWeight,
-                  marginBottom: printMode ? '8px' : styles.section.titleMarginBottom,
+                  marginBottom: styles.section.titleMarginBottom,
                   pageBreakAfter: 'avoid',
                 }}
               >
@@ -579,9 +609,9 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
                 variant="body2" 
                 sx={{
                   color: styles.content.primaryColor,
-                  fontSize: printMode ? '0.8rem' : styles.content.fontSize,
-                  lineHeight: printMode ? '1.3' : styles.content.lineHeight,
-                  marginBottom: printMode ? '12px' : '16px',
+                  fontSize: styles.content.fontSize,
+                  lineHeight: styles.content.lineHeight,
+                  marginBottom: '16px',
                   pageBreakAfter: 'avoid',
                 }}
               >
@@ -590,14 +620,14 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
             </Box>
           )}
           {data.interests && (
-            <Box sx={{ pageBreakAfter: printMode ? 'avoid' : 'auto' }}>
+            <Box sx={{ pageBreakAfter: 'auto' }}>
               <Typography 
                 variant="h6" 
                 sx={{
                   color: styles.section.titleColor,
-                  fontSize: printMode ? '1.1rem' : styles.section.titleFontSize,
+                  fontSize: styles.section.titleFontSize,
                   fontWeight: styles.section.titleFontWeight,
-                  marginBottom: printMode ? '8px' : styles.section.titleMarginBottom,
+                  marginBottom: styles.section.titleMarginBottom,
                   pageBreakAfter: 'avoid',
                 }}
               >
@@ -607,9 +637,9 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
                 variant="body2" 
                 sx={{
                   color: styles.content.primaryColor,
-                  fontSize: printMode ? '0.8rem' : styles.content.fontSize,
-                  lineHeight: printMode ? '1.3' : styles.content.lineHeight,
-                  marginBottom: printMode ? '12px' : '16px',
+                  fontSize: styles.content.fontSize,
+                  lineHeight: styles.content.lineHeight,
+                  marginBottom: '16px',
                   pageBreakAfter: 'avoid',
                 }}
               >
@@ -618,14 +648,14 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
             </Box>
           )}
           {data.references && (
-            <Box sx={{ pageBreakAfter: printMode ? 'avoid' : 'auto' }}>
+            <Box sx={{ pageBreakAfter: 'auto' }}>
               <Typography 
                 variant="h6" 
                 sx={{
                   color: styles.section.titleColor,
-                  fontSize: printMode ? '1.1rem' : styles.section.titleFontSize,
+                  fontSize: styles.section.titleFontSize,
                   fontWeight: styles.section.titleFontWeight,
-                  marginBottom: printMode ? '8px' : styles.section.titleMarginBottom,
+                  marginBottom: styles.section.titleMarginBottom,
                   pageBreakAfter: 'avoid',
                 }}
               >
@@ -635,8 +665,8 @@ const ResumePreview: React.FC<Props> = ({ data, theme = 'modern-blue', printMode
                 variant="body2" 
                 sx={{
                   color: styles.content.primaryColor,
-                  fontSize: printMode ? '0.8rem' : styles.content.fontSize,
-                  lineHeight: printMode ? '1.3' : styles.content.lineHeight,
+                  fontSize: styles.content.fontSize,
+                  lineHeight: styles.content.lineHeight,
                   pageBreakAfter: 'avoid',
                 }}
               >

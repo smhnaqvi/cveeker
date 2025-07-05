@@ -46,10 +46,51 @@ const TextFieldComponent = styled(TextField)(({theme}) => ({
     }
 }))
 
-type IInputPorps = { name: string, label: string, type: string, [key: string]: any }
+type IInputPorps = { 
+    name: string, 
+    label: string, 
+    type: string, 
+    maxLength?: number,
+    [key: string]: any 
+}
 
-const Input = ({name, label, type, ...rest}: IInputPorps) => {
-    return <TextFieldComponent fullWidth name={name} label={label} type={type} {...rest} />
+const Input = ({name, label, type, maxLength, ...rest}: IInputPorps) => {
+    const currentValue = rest.value || '';
+    const charCount = currentValue.length;
+    const remainingChars = maxLength ? maxLength - charCount : 0;
+    const isNearLimit = maxLength && remainingChars <= 10;
+    const isOverLimit = maxLength && remainingChars < 0;
+
+    return (
+        <Stack gap={0.5}>
+            <TextFieldComponent 
+                fullWidth 
+                name={name} 
+                label={label} 
+                type={type} 
+                inputProps={{
+                    ...rest.inputProps,
+                    maxLength: maxLength
+                }}
+                {...rest} 
+            />
+            {maxLength && (
+                <Typography 
+                    variant="caption" 
+                    sx={{ 
+                        color: isOverLimit ? 'error.main' : isNearLimit ? 'warning.main' : 'text.secondary',
+                        fontSize: '0.75rem',
+                        textAlign: 'right',
+                        mt: 0.5
+                    }}
+                >
+                    {charCount}/{maxLength} characters
+                    {remainingChars >= 0 && ` (${remainingChars} remaining)`}
+                    {isOverLimit && ` (${Math.abs(remainingChars)} over limit)`}
+                </Typography>
+            )}
+        </Stack>
+    );
 }
 
 export const RHFInput = (props: IInputPorps) => {

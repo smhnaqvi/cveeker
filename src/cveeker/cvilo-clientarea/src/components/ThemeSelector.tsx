@@ -15,9 +15,10 @@ import {
   Tabs,
   Tab,
 } from '@mui/material';
+import { Palette as PaletteIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { resumeThemes, getThemesByCategory } from '../lib/theme/resumeThemes';
 import type { ResumeFormValues } from '../pages/dashboard/resume/components/ResumeForm';
-import ResumePreview from './ResumePreview2';
+import MultiPageResumePreview from './MultiPageResumePreview';
 
 interface ThemeSelectorProps {
   selectedTheme: string;
@@ -140,37 +141,49 @@ const ThemeSelector: React.FC<ThemeSelectorProps> = ({
   return (
     <>
       {/* Current Theme Display */}
-      <Card 
-        sx={{ 
-          cursor: 'pointer',
-          border: '2px solid',
-          borderColor: 'primary.main',
-          '&:hover': {
-            borderColor: 'primary.dark',
-          }
-        }}
+      <Button
+        variant="outlined"
         onClick={handleOpen}
+        startIcon={<PaletteIcon />}
+        endIcon={<ExpandMoreIcon />}
+        sx={{
+          textTransform: 'none',
+          borderRadius: 2,
+          px: 2,
+          py: 1,
+          borderColor: selectedThemeData ? 'primary.main' : 'divider',
+          color: selectedThemeData ? 'primary.main' : 'text.secondary',
+          backgroundColor: selectedThemeData ? 'primary.50' : 'transparent',
+          '&:hover': {
+            borderColor: 'primary.main',
+            backgroundColor: 'primary.50',
+            color: 'primary.main',
+          },
+          minWidth: '140px',
+          justifyContent: 'space-between',
+        }}
       >
-        <CardContent sx={{ p: 2 }}>
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Box>
-              <Typography variant="subtitle1" fontWeight="600">
-                {selectedThemeData?.name || 'Select Theme'}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {selectedThemeData?.description || 'Choose a theme for your resume'}
-              </Typography>
-            </Box>
-            <Chip 
-              label={selectedThemeData?.category || 'Theme'} 
-              size="small" 
-              color="primary" 
-              variant="outlined"
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography variant="body2" fontWeight={selectedThemeData ? 600 : 400}>
+            {selectedThemeData?.name || 'Select Theme'}
+          </Typography>
+          {selectedThemeData && (
+            <Chip
+              label={selectedThemeData.category}
+              size="small"
+              color="primary"
+              variant="filled"
+              sx={{
+                fontSize: '0.65rem',
+                height: '18px',
+                backgroundColor: 'primary.main',
+                color: 'white',
+              }}
             />
-          </Stack>
-        </CardContent>
-      </Card>
-
+          )}
+        </Box>
+      </Button>
+      
       {/* Theme Selection Dialog */}
       <Dialog 
         open={open} 
@@ -256,9 +269,10 @@ const ThemeSelector: React.FC<ThemeSelectorProps> = ({
               </Typography>
               {previewTheme ? (
                 <Box sx={{ height: 'calc(90vh - 200px)', overflowY: 'auto' }}>
-                  <ResumePreview 
+                  <MultiPageResumePreview 
                     data={dataToUse} 
                     theme={previewTheme} 
+                    printMode={false}
                   />
                 </Box>
               ) : (
