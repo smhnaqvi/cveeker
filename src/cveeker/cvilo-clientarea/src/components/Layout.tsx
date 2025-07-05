@@ -18,7 +18,6 @@ import {
 import {
   Menu as MenuIcon,
   Dashboard as DashboardIcon,
-  Description as DescriptionIcon,
   Settings as SettingsIcon,
   ExitToApp,
   Person,
@@ -62,7 +61,6 @@ export default function Layout({ children }: LayoutProps) {
 
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-    { text: 'My Resumes', icon: <DescriptionIcon />, path: '/dashboard/resume/list' },
     { text: 'Settings', icon: <SettingsIcon />, path: '/dashboard/settings' },
   ]
 

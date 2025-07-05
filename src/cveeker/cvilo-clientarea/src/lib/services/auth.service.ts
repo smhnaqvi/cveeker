@@ -37,8 +37,8 @@ export class AuthService extends BaseService {
   /**
    * Refresh access token
    */
-  async refreshToken(): Promise<ApiResponse<RefreshTokenResponse>> {
-    return this.post<RefreshTokenResponse>('/refresh');
+  async refreshToken(refreshToken?: string): Promise<ApiResponse<RefreshTokenResponse>> {
+    return this.post<RefreshTokenResponse>('/refresh', { refresh_token: refreshToken });
   }
 
   /**

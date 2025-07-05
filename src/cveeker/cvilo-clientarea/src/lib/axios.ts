@@ -84,11 +84,13 @@ api.interceptors.response.use(
             isRefreshing = true;
 
             try {
+              console.log('Attempting to refresh token...');
               // Try to refresh the token using auth store
               const { useAuthStore } = await import('../stores/authStore');
               const refreshSuccess = await useAuthStore.getState().refreshAccessToken();
               
               if (refreshSuccess) {
+                console.log('Token refresh successful');
                 // Get the new access token
                 const newAccessToken = useAuthStore.getState().accessToken;
                 
@@ -98,6 +100,7 @@ api.interceptors.response.use(
                 
                 return api(originalRequest);
               } else {
+                console.log('Token refresh returned false');
                 throw new Error('Token refresh failed');
               }
             } catch (refreshError) {
@@ -110,7 +113,7 @@ api.interceptors.response.use(
               processQueue(refreshError, null);
               
               // Redirect to login page
-              window.location.href = '/login';
+              window.location.href = '/auth/login';
               return Promise.reject(refreshError);
             } finally {
               isRefreshing = false;
@@ -175,10 +178,13 @@ export default api;
 
 // Type definitions for common API responses
 export interface ApiResponse<T = unknown> {
-  success: boolean;
+  status: string;
+  code: number;
   data?: T;
   message?: string;
-  error?: string;
+  path?: string;
+  timestamp?: string;
+  request_id?: string;
 }
 
 export interface PaginatedResponse<T = unknown> {

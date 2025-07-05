@@ -6,7 +6,6 @@ import LinkedInCallback from "../pages/auth/LinkedInCallback";
 import ProtectionProvider from "../provider/ProtectionProvider";
 import CreateResume from "../pages/dashboard/resume/CreateResume";
 import PreviewResume from "../pages/dashboard/resume/PreviewResume";
-import ListResume from "../pages/dashboard/resume/ListResume";
 import EditResume from "../pages/dashboard/resume/EditResume";
 
 const router = createBrowserRouter([
@@ -44,6 +43,10 @@ const router = createBrowserRouter([
                 element: <Dashboard />,
             },
             {
+                path: ":id",
+                element: <Dashboard />,
+            },
+            {
                 path: "resume",
                 children: [
                     {
@@ -57,10 +60,6 @@ const router = createBrowserRouter([
                     {
                         path: ":id/edit",
                         element: <EditResume />,
-                    },
-                    {
-                        path: "list",
-                        element: <ListResume />,
                     },
                 ],
             },

@@ -57,7 +57,7 @@ const ResumeSidebar: React.FC<ResumeSidebarProps> = ({ onResumeSelect }) => {
     if (onResumeSelect) {
       onResumeSelect(resume);
     }
-    navigate(`/dashboard/resume/${resume.id}/edit`);
+    navigate(`/dashboard/${resume.id}`);
   };
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, resume: Resume) => {

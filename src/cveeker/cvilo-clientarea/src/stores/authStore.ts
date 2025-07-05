@@ -49,16 +49,23 @@ export const useAuthStore = create<AuthState>()(
       refreshAccessToken: async (): Promise<boolean> => {
         const { refreshToken } = get();
         
+        console.log('refreshAccessToken called, refreshToken exists:', !!refreshToken);
+        
         if (!refreshToken) {
+          console.log('No refresh token available');
           return false;
         }
 
         try {
-          const response = await authService.refreshToken();
+          console.log('Calling authService.refreshToken with refresh token');
+          const response = await authService.refreshToken(refreshToken);
+          
+          console.log('Refresh token response:', response);
           
           if (response.data) {
             const { access_token, refresh_token } = response.data;
             
+            console.log('Updating tokens in store');
             // Update state - Zustand persist will handle localStorage
             set({ 
               accessToken: access_token, 
@@ -70,6 +77,12 @@ export const useAuthStore = create<AuthState>()(
           }
         } catch (error) {
           console.error('Token refresh failed:', error);
+          console.error('Error details:', {
+            message: error instanceof Error ? error.message : 'Unknown error',
+            response: error instanceof Error && 'response' in error ? (error as { response?: { status?: number; data?: unknown } }).response : null,
+            status: error instanceof Error && 'response' in error ? (error as { response?: { status?: number; data?: unknown } }).response?.status : null,
+            data: error instanceof Error && 'response' in error ? (error as { response?: { status?: number; data?: unknown } }).response?.data : null,
+          });
           // Clear invalid tokens
           get().logout();
           return false;

@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import FormProvider from "../../../../provider/FormProvider";
 import { RHFInput as Input } from "../../../../components/Input";
 import Button from "../../../../components/Button";
-import { Add, Delete, ExpandMore } from "@mui/icons-material";
+import { Add, Close, Delete, ExpandMore } from "@mui/icons-material";
 import MultiPageResumePreview from "../../../../components/MultiPageResumePreview";
 import ThemeSelector from "../../../../components/ThemeSelector";
 import { useCreateResumeFromForm } from "../../../../lib/hooks/useResumes";
@@ -534,10 +534,19 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
                   </Grid>
                 </CardContent>
               </Card>
-                <Stack position={"sticky"} bottom={0} top={0} left={0} right={0} zIndex={1000} pb={3} pt={5} sx={{ backgroundImage: 'linear-gradient(to bottom, transparent 0%, #3c4147 30px)' }}>
+                <Stack
+                  position={"sticky"} 
+                  bottom={0} top={0} left={0} right={0} 
+                  zIndex={1000} 
+                  flexDirection={"row"}
+                  pb={3} pt={5}
+                  gap={2}
+                  sx={{ backgroundImage: 'linear-gradient(to bottom, transparent 0%, #3c4147 30px)' }}>
+                  <Button sx={{width: "30%"}} variant="outlined" color="inherit" onClick={() => navigate('/dashboard')} startIcon={<Close />}>Close</Button>
                   <LoadingButton
                     type="submit" 
                     variant="contained" 
+                    sx={{width: "70%"}}
                     size="large"
                     loading={createResumeMutation.isPending || updateResumeMutation.isPending}
                     disabled={createResumeMutation.isPending || updateResumeMutation.isPending}
