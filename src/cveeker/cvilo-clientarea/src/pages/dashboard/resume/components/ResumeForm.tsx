@@ -14,6 +14,7 @@ import { useCreateResumeFromForm } from "../../../../lib/hooks/useResumes";
 import type { ResumeFormData } from "../../../../lib/services";
 import { useUpdateResumeFromForm } from "../../../../lib/hooks/useResumes";
 import { LoadingButton } from "@mui/lab";
+import { FormFieldError } from "../../../../components/Input";
 
 // Reusable nested schemas
 const workExperienceSchema = yup.object({
@@ -87,8 +88,8 @@ export const ResumeSchema = yup.object({
   education: yup.array().of(educationSchema).min(1, "At least one education is required").required(),
   skills: yup.array().of(skillSchema).min(1, "At least one skill is required").required(),
   languages: yup.array().of(languageSchema).min(1, "At least one language is required").required(),
-  certifications: yup.array().of(certificationSchema).min(1, "At least one certification is required").required(),
-  projects: yup.array().of(projectSchema).min(1, "At least one project is required").required(),
+  certifications: yup.array().of(certificationSchema).required(),
+  projects: yup.array().of(projectSchema).required(),
   awards: yup.string().default(""),
   interests: yup.string().default(""),
   references: yup.string().default(""),
@@ -112,6 +113,11 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
     resolver: yupResolver(ResumeSchema),
     defaultValues: resume,
   });
+
+  const { formState: { errors } } = methods
+  
+  console.log(errors)
+
   const watchAll = methods.watch();
   
   // Dynamic fields
@@ -221,12 +227,12 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
                     <Grid size={12}><Input name="summary" label="Professional Summary" type="text" multiline rows={5} maxLength={500} /></Grid>
                     <Grid size={12}><Input name="objective" label="Objective" type="text" multiline rows={5} maxLength={300} /></Grid>
                   </Grid>
-                </CardContent>
+                  </CardContent>
               </Card>
 
               {/* Experience */}
               <Card>
-                <CardHeader title="Experience" />
+                  <CardHeader title="Experience" />
                 <CardContent>
                   <Stack spacing={2}>
                     {expArray.fields.map((item, idx) => (
@@ -273,8 +279,10 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
                       Add Experience
                     </Button>
                   </Stack>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                  {errors.experience?.message && <FormFieldError message={errors.experience.message}  />}
+                </Card>
+                
 
               {/* Education */}
               <Card>
@@ -325,7 +333,8 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
                       Add Education
                     </Button>
                   </Stack>
-                </CardContent>
+                  </CardContent>
+                  {errors.education?.message && <FormFieldError message={errors.education.message}  />}
               </Card>
 
               {/* Skills */}
@@ -370,6 +379,7 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
                     </Button>
                   </Stack>
                 </CardContent>
+                {errors.skills?.message && <FormFieldError message={errors.skills.message}  />}
               </Card>
 
               {/* Languages */}
@@ -410,6 +420,7 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
                     </Button>
                   </Stack>
                 </CardContent>
+                {errors.languages?.message && <FormFieldError message={errors.languages.message}  />}
               </Card>
 
               {/* Certifications */}
@@ -458,6 +469,7 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
                     </Button>
                   </Stack>
                 </CardContent>
+                {errors.certifications?.message && <FormFieldError message={errors.certifications.message}  />}
               </Card>
 
               {/* Projects */}
@@ -508,6 +520,7 @@ const ResumeForm = ({ resume, editMode = false }: { resume: ResumeFormValues, ed
                     </Button>
                   </Stack>
                 </CardContent>
+                {errors.projects?.message && <FormFieldError message={errors.projects.message}  />}
               </Card>
 
               {/* Other Sections */}

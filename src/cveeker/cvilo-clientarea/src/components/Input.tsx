@@ -109,13 +109,13 @@ export const RHFInput = (props: IInputPorps) => {
                     value={value} // return updated value
                     ref={ref} // set ref for focus management
                 />
-                {hasErrorMessage && <InputError message={hasErrorMessage} />}
+                {hasErrorMessage && <FormFieldError message={hasErrorMessage} />}
             </Stack>
         }}
     />)
 }
 
-const InputError = ({ message }: {message: string}) => {
+export const FormFieldError = ({ message }: {message: string}) => {
     return (
         <Stack flexDirection="row" gap={1} sx={{color:(theme) => theme.palette.error.main}}>
             <ErrorOutlineIcon />
