@@ -156,6 +156,12 @@ func (ac *AuthController) RefreshToken(c *gin.Context) {
 		return
 	}
 
+	// Validate request
+	if err := ac.validate.Struct(refreshReq); err != nil {
+		utils.BadRequest(c, "Validation failed", err.Error())
+		return
+	}
+
 	// Validate refresh token
 	claims, err := ac.authService.ValidateJWT(refreshReq.RefreshToken)
 	if err != nil {
