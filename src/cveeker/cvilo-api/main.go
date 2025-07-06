@@ -50,6 +50,7 @@ func main() {
 	userController := controllers.NewUserController()
 	resumeController := controllers.NewResumeController()
 	linkedInController := controllers.NewLinkedInController()
+	aiController := controllers.NewAIController()
 
 	// Initialize router
 	router := gin.Default()
@@ -148,6 +149,16 @@ func main() {
 			linkedin.POST("/sync/:id", linkedInController.SyncProfile)                // Sync LinkedIn profile data
 			linkedin.DELETE("/disconnect/:id", linkedInController.DisconnectLinkedIn) // Disconnect LinkedIn
 		}
+
+		// AI Resume Builder routes
+		ai := v1.Group("/ai")
+		{
+			ai.GET("/status", aiController.GetAIServiceStatus)                                              // Get AI service status
+			ai.POST("/generate", aiController.GenerateResumeFromPrompt)                                     // Generate new resume from prompt
+			ai.POST("/update", aiController.UpdateResumeFromPrompt)                                         // Update existing resume from prompt
+			ai.POST("/users/:user_id/generate", aiController.GenerateResumeFromPromptWithID)                // Generate resume for specific user
+			ai.POST("/users/:user_id/resumes/:resume_id/update", aiController.UpdateResumeFromPromptWithID) // Update specific resume
+		}
 	}
 
 	// API documentation endpoint
@@ -197,6 +208,13 @@ func main() {
 					"POST /helpers/parse-education":  "Parse education data to JSON",
 					"POST /helpers/parse-skills":     "Parse skills data to JSON",
 					"GET /sample-data":               "Get sample data structures",
+				},
+				"ai": gin.H{
+					"GET /ai/status":                                    "Get AI service status",
+					"POST /ai/generate":                                 "Generate new resume from prompt",
+					"POST /ai/update":                                   "Update existing resume from prompt",
+					"POST /ai/users/:user_id/generate":                  "Generate resume for specific user",
+					"POST /ai/users/:user_id/resumes/:resume_id/update": "Update specific resume",
 				},
 			},
 			"sample_requests": gin.H{

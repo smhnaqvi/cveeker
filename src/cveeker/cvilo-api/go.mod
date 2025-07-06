@@ -11,6 +11,7 @@ require (
 
 require (
 	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/sashabaranov/go-openai v1.40.3 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 )
 
