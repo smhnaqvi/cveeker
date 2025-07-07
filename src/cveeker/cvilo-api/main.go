@@ -27,9 +27,9 @@ func main() {
 	defer database.CloseDatabases()
 
 	// Clear database
-	if err := database.ClearDatabase(); err != nil {
-		log.Fatal("Failed to clear database:", err)
-	}
+	// if err := database.ClearDatabase(); err != nil {
+	// 	log.Fatal("Failed to clear database:", err)
+	// }
 
 	// Auto-migrate the schemas
 	if err := migration.AutoMigrate(); err != nil {

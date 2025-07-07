@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/smhnaqvi/cvilo/models"
@@ -169,9 +171,13 @@ func (ac *AuthController) RefreshToken(c *gin.Context) {
 		return
 	}
 
+	// log claims
+	log.Println(claims)
+
 	// Get user from database
 	var user models.UserModel
 	if err := user.GetUserByID(claims.UserID); err != nil {
+		log.Printf("Error getting user by id: %v", err)
 		utils.NotFound(c, "User not found")
 		return
 	}

@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -12,12 +14,19 @@ import (
 )
 
 type AIController struct {
-	aiService *services.AIService
+	aiService           *services.AIService
+	githubModelsService *services.GitHubModelsService
+	useGitHubModels     bool
 }
 
 func NewAIController() *AIController {
+	// Check if GitHub Models should be used (for prototype testing)
+	useGitHubModels := os.Getenv("USE_GITHUB_MODELS") == "true"
+
 	return &AIController{
-		aiService: services.NewAIService(),
+		aiService:           services.NewAIService(),
+		githubModelsService: services.NewGitHubModelsService(),
+		useGitHubModels:     useGitHubModels,
 	}
 }
 
@@ -53,11 +62,39 @@ func (ac *AIController) GenerateResumeFromPrompt(c *gin.Context) {
 	// Generate resume title based on prompt and timestamp
 	title := "AI Generated Resume - " + time.Now().Format("2006-01-02 15:04")
 
-	// Generate resume using AI
-	aiResponse, err := ac.aiService.GenerateResumeFromPrompt(request)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate resume: " + err.Error()})
-		return
+	// Generate resume using AI (GitHub Models for prototype testing, OpenAI for production)
+	var aiResponse *services.AIResumeResponse
+	var err error
+	var usedProvider string
+
+	if ac.useGitHubModels && ac.githubModelsService.IsConfigured() {
+		// Try GitHub Models first
+		aiResponse, err = ac.githubModelsService.GenerateResumeFromPrompt(request)
+		if err != nil {
+			log.Printf("GitHub Models failed, falling back to OpenAI: %v", err)
+			// Fallback to OpenAI if GitHub Models fails
+			if ac.aiService.IsConfigured() {
+				aiResponse, err = ac.aiService.GenerateResumeFromPrompt(request)
+				usedProvider = "openai (fallback)"
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate resume with both providers: " + err.Error()})
+					return
+				}
+			} else {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "GitHub Models failed and OpenAI is not configured: " + err.Error()})
+				return
+			}
+		} else {
+			usedProvider = "github_models"
+		}
+	} else {
+		// Use OpenAI directly
+		aiResponse, err = ac.aiService.GenerateResumeFromPrompt(request)
+		usedProvider = "openai"
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate resume: " + err.Error()})
+			return
+		}
 	}
 
 	// Convert AI response to ResumeModel
@@ -76,6 +113,7 @@ func (ac *AIController) GenerateResumeFromPrompt(c *gin.Context) {
 	utils.Success(c, "Resume generated successfully using AI", gin.H{
 		"resume":      resume,
 		"ai_response": aiResponse,
+		"provider":    usedProvider,
 	})
 }
 
@@ -121,11 +159,22 @@ func (ac *AIController) UpdateResumeFromPrompt(c *gin.Context) {
 		request.Theme = existingResume.Theme
 	}
 
-	// Update resume using AI
-	aiResponse, err := ac.aiService.UpdateResumeFromPrompt(request, existingResume)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update resume: " + err.Error()})
-		return
+	// Update resume using AI (GitHub Models for prototype testing, OpenAI for production)
+	var aiResponse *services.AIResumeResponse
+	var err error
+
+	if ac.useGitHubModels && ac.githubModelsService.IsConfigured() {
+		aiResponse, err = ac.githubModelsService.UpdateResumeFromPrompt(request, existingResume)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update resume with GitHub Models: " + err.Error()})
+			return
+		}
+	} else {
+		aiResponse, err = ac.aiService.UpdateResumeFromPrompt(request, existingResume)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update resume: " + err.Error()})
+			return
+		}
 	}
 
 	// Convert AI response to ResumeModel
@@ -318,17 +367,32 @@ func (ac *AIController) UpdateResumeFromPromptWithID(c *gin.Context) {
 func (ac *AIController) GetAIServiceStatus(c *gin.Context) {
 	status := "disabled"
 	openaiConfigured := false
+	githubModelsConfigured := false
+	activeProvider := "none"
 
 	if ac.aiService != nil {
 		openaiConfigured = ac.aiService.IsConfigured()
-		if openaiConfigured {
-			status = "enabled"
-		}
+	}
+
+	if ac.githubModelsService != nil {
+		githubModelsConfigured = ac.githubModelsService.IsConfigured()
+	}
+
+	// Determine active provider
+	if ac.useGitHubModels && githubModelsConfigured {
+		status = "enabled"
+		activeProvider = "github_models"
+	} else if openaiConfigured {
+		status = "enabled"
+		activeProvider = "openai"
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"status":            status,
-		"message":           "AI service status",
-		"openai_configured": openaiConfigured,
+		"status":                   status,
+		"message":                  "AI service status",
+		"openai_configured":        openaiConfigured,
+		"github_models_configured": githubModelsConfigured,
+		"active_provider":          activeProvider,
+		"use_github_models":        ac.useGitHubModels,
 	})
 }

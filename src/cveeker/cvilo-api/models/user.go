@@ -124,7 +124,7 @@ func (u *UserModel) GetUserByEmail(email string) error {
 
 func (u *UserModel) GetUserByID(id uint) error {
 	db := database.GetSqliteDB()
-	if err := db.First(&u, id).Error; err == nil {
+	if err := db.Where("id = ?", id).First(&u).Error; err == nil {
 		return nil
 	}
 	return errors.New("user not found")
