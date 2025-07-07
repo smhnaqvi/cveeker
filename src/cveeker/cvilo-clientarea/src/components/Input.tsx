@@ -48,7 +48,7 @@ const TextFieldComponent = styled(TextField)(({theme}) => ({
 
 type IInputPorps = { 
     name: string, 
-    label: string, 
+    label?: string, 
     type: string, 
     maxLength?: number,
     [key: string]: any 

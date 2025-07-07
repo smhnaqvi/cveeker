@@ -5,7 +5,7 @@ import type { ResumeFormValues } from '../../pages/dashboard/resume/components/R
  * Safely parses JSON string and returns default value if parsing fails
  */
 function safeJsonParse<T>(jsonString: string, defaultValue: T): T {
-  if (!jsonString || jsonString.trim() === '') {
+  if (!jsonString || jsonString.trim() === '' || jsonString.trim() === 'null') {
     return defaultValue;
   }
   
