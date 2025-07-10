@@ -1,5 +1,6 @@
 import PageContent from '../../components/Page'
 import MultiPageResumePreview from '../../components/MultiPageResumePreview';
+import ChatHistoryButton from '../../components/ChatHistoryButton';
 import { resumeKeys, useResume } from '../../lib/hooks/useResumes';
 import type { ResumeFormValues } from './resume/components/ResumeForm';
 import { convertResumeToFormValues } from "../../lib/utils/resumeConverter";
@@ -24,6 +25,7 @@ import { Send, AutoAwesome, Edit, Add } from '@mui/icons-material';
 import { useState } from 'react';
 import { useUser } from '../../stores/authStore';
 import { aiService } from '../../lib/services/ai.service';
+import { useQueryClient } from '@tanstack/react-query';
 
 // Industry/Role options
 const INDUSTRY_OPTIONS = [
@@ -93,6 +95,7 @@ export default function Dashboard() {
   const { data: response } = useResume(Number(id));
   const navigate = useNavigate();
   const user = useUser();
+  const queryClient = useQueryClient();
   
   // State for AI prompt interface
   const [selectedIndustry, setSelectedIndustry] = useState('');
@@ -135,7 +138,7 @@ export default function Dashboard() {
 
       if (response.code === 200) {
         // Refresh the page to show the new/updated resume
-        resumeKeys.detail(Number(id));
+        queryClient.invalidateQueries({ queryKey: resumeKeys.detail(Number(id)) });
       } else {
         setError(response.data?.error || 'Failed to generate resume');
       }
@@ -181,16 +184,32 @@ export default function Dashboard() {
 
   return (
     <PageContent>
-      <Stack flexDirection="row" gap={3} height="100%">
-        {/* AI Prompt Interface */}
-        <Stack width="40%" gap={3}>
+      <Stack direction={{ xs: 'column', md: 'row' }} gap={3} height="100%">
+        {/* AI Generator Panel */}
+        <Stack width={{ xs: '100%', md: '35%' }} gap={3}>
           <Card>
             <CardContent>
               <Stack gap={2}>
-                <Typography variant="h6" display="flex" alignItems="center" gap={1}>
-                  <AutoAwesome color="primary" />
-                  AI Resume Generator
-                </Typography>
+                <Box display="flex" alignItems="center" justifyContent="space-between">
+                  <Typography variant="h6" display="flex" alignItems="center" gap={1}>
+                    <AutoAwesome color="primary" />
+                    AI Resume Generator
+                  </Typography>
+                  
+                  {/* Chat History Button */}
+                  {id && (
+                    <ChatHistoryButton
+                      resumeId={Number(id)}
+                      onReusePrompt={setPromptText}
+                      onEditPrompt={(history) => {
+                        setPromptText(history.prompt);
+                        // You could add additional logic here to pre-fill other fields
+                      }}
+                      variant="icon"
+                      size="small"
+                    />
+                  )}
+                </Box>
                 
                 {/* Industry Selection */}
                 <FormControl fullWidth>
@@ -293,8 +312,8 @@ export default function Dashboard() {
           </Card>
         </Stack>
 
-        {/* Resume Preview */}
-        <Stack width="60%" gap={2}>
+        {/* Resume Preview Panel */}
+        <Stack width={{ xs: '100%', md: '65%' }} gap={2}>
           <Typography variant="h6">Resume Preview</Typography>
           {formData && <MultiPageResumePreview data={formData} />}
         </Stack>
