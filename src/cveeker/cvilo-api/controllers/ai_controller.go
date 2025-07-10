@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -110,6 +111,22 @@ func (ac *AIController) GenerateResumeFromPrompt(c *gin.Context) {
 		return
 	}
 
+	// Save chat prompt history
+	responseSummary := fmt.Sprintf("Generated resume with %d experience entries, %d education entries, %d skills",
+		len(aiResponse.Experience), len(aiResponse.Education), len(aiResponse.Skills))
+
+	if err := ac.aiService.SaveChatPromptHistory(
+		resume.ID,
+		request.UserID,
+		request.Prompt,
+		responseSummary,
+		usedProvider,
+		"success",
+	); err != nil {
+		log.Printf("Warning: Failed to save chat prompt history: %v", err)
+		// Continue even if history saving fails
+	}
+
 	utils.Success(c, "Resume generated successfully using AI", gin.H{
 		"resume":      resume,
 		"ai_response": aiResponse,
@@ -192,6 +209,22 @@ func (ac *AIController) UpdateResumeFromPrompt(c *gin.Context) {
 	if err := existingResume.UpdateResume(*request.ResumeID, *updatedResume); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save updated resume: " + err.Error()})
 		return
+	}
+
+	// Save chat prompt history
+	responseSummary := fmt.Sprintf("Updated resume with %d experience entries, %d education entries, %d skills",
+		len(aiResponse.Experience), len(aiResponse.Education), len(aiResponse.Skills))
+
+	if err := ac.aiService.SaveChatPromptHistory(
+		*request.ResumeID,
+		request.UserID,
+		request.Prompt,
+		responseSummary,
+		"openai", // Default provider for updates
+		"success",
+	); err != nil {
+		log.Printf("Warning: Failed to save chat prompt history: %v", err)
+		// Continue even if history saving fails
 	}
 
 	utils.Success(c, "Resume updated successfully using AI", gin.H{

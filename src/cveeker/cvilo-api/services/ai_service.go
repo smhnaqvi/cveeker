@@ -22,6 +22,7 @@ type AIResumeRequest struct {
 	ResumeID *uint  `json:"resume_id,omitempty"` // Optional: if updating existing resume
 	Template string `json:"template,omitempty"`
 	Theme    string `json:"theme,omitempty"`
+	Provider string `json:"provider,omitempty"` // AI provider used (openai, github_models, etc.)
 }
 
 type AIResumeResponse struct {
@@ -61,6 +62,15 @@ func NewAIService() *AIService {
 func (ai *AIService) GenerateResumeFromPrompt(request AIResumeRequest) (*AIResumeResponse, error) {
 	if ai.client == nil {
 		return nil, fmt.Errorf("OpenAI client not initialized - check OPENAI_API_KEY")
+	}
+
+	// Get chat prompt history if resume ID is provided
+	var chatHistory string
+	if request.ResumeID != nil {
+		history, err := ai.GetChatPromptHistory(*request.ResumeID, 5) // Get last 5 prompts
+		if err == nil {
+			chatHistory = history
+		}
 	}
 
 	// Create the system prompt
@@ -151,9 +161,10 @@ Important guidelines:
 5. Skills should have levels 1-5 (1=beginner, 5=expert)
 6. Use appropriate categories for skills (Technical, Languages, Soft Skills, etc.)
 7. Make the resume comprehensive and professional
-8. Ensure all JSON is valid and properly formatted`
+8. Ensure all JSON is valid and properly formatted
+9. Consider previous conversation history when provided to maintain consistency`
 
-	// Create user prompt with context
+	// Create user prompt with context and chat history
 	userPrompt := fmt.Sprintf(`Create a professional resume based on this prompt: "%s"
 
 Additional context:
@@ -161,11 +172,14 @@ Additional context:
 - Theme preference: %s
 - This is for user ID: %d
 
+%s
+
 Please generate a complete, professional resume in the exact JSON format specified.`,
 		request.Prompt,
 		request.Template,
 		request.Theme,
-		request.UserID)
+		request.UserID,
+		chatHistory)
 
 	// Make the API call
 	resp, err := ai.client.CreateChatCompletion(
@@ -230,6 +244,12 @@ func (ai *AIService) UpdateResumeFromPrompt(request AIResumeRequest, existingRes
 		return nil, fmt.Errorf("OpenAI client not initialized - check OPENAI_API_KEY")
 	}
 
+	// Get chat prompt history for this resume
+	chatHistory, err := ai.GetChatPromptHistory(existingResume.ID, 5) // Get last 5 prompts
+	if err != nil {
+		chatHistory = "" // Continue without history if there's an error
+	}
+
 	// Create the system prompt for updating
 	systemPrompt := `You are an expert resume builder. Based on the user's prompt and the existing resume, update the resume in JSON format.
 
@@ -237,10 +257,11 @@ The response should be a valid JSON object with the same structure as before, bu
 1. Keep relevant existing information that doesn't conflict with the new prompt
 2. Update or add information based on the user's prompt
 3. Maintain the professional quality and consistency
+4. Consider previous conversation history to maintain context and consistency
 
 Return the complete updated resume in JSON format.`
 
-	// Create user prompt with existing resume context
+	// Create user prompt with existing resume context and chat history
 	userPrompt := fmt.Sprintf(`Update this resume based on the prompt: "%s"
 
 Existing resume information:
@@ -252,7 +273,9 @@ Existing resume information:
 - Education: %s
 - Skills: %s
 
-Please update the resume according to the prompt while maintaining professional quality. Return the complete updated resume in JSON format.`,
+%s
+
+Please update the resume according to the prompt while maintaining professional quality and considering the conversation history. Return the complete updated resume in JSON format.`,
 		request.Prompt,
 		existingResume.FullName,
 		existingResume.Email,
@@ -260,7 +283,8 @@ Please update the resume according to the prompt while maintaining professional 
 		existingResume.Summary,
 		existingResume.Experience,
 		existingResume.Education,
-		existingResume.Skills)
+		existingResume.Skills,
+		chatHistory)
 
 	// Make the API call
 	resp, err := ai.client.CreateChatCompletion(
@@ -369,6 +393,25 @@ func (ai *AIService) ConvertAIResponseToResume(aiResponse *AIResumeResponse, use
 	}
 
 	return resume, nil
+}
+
+// SaveChatPromptHistory saves the chat prompt history for a resume
+func (ai *AIService) SaveChatPromptHistory(resumeID uint, userID uint, prompt string, response string, provider string, status string) error {
+	history := &models.ChatPromptHistory{
+		ResumeID: resumeID,
+		UserID:   userID,
+		Prompt:   prompt,
+		Response: response,
+		Provider: provider,
+		Status:   status,
+	}
+	return history.Create()
+}
+
+// GetChatPromptHistory retrieves recent chat prompt history for a resume
+func (ai *AIService) GetChatPromptHistory(resumeID uint, maxHistory int) (string, error) {
+	var history models.ChatPromptHistory
+	return history.GetPromptHistoryForAI(resumeID, maxHistory)
 }
 
 // IsConfigured returns true if the AI service is properly configured

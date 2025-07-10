@@ -6,12 +6,12 @@ toolchain go1.23.10
 
 require (
 	github.com/golang-jwt/jwt/v5 v5.2.2
+	github.com/sashabaranov/go-openai v1.40.3
 	gorm.io/gorm v1.26.1
 )
 
 require (
 	github.com/golang/protobuf v1.5.3 // indirect
-	github.com/sashabaranov/go-openai v1.40.3 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 )
 

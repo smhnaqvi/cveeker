@@ -40,6 +40,7 @@ func ClearDatabase() error {
 	DB.SQLiteDB.Exec("DELETE FROM users")
 	DB.SQLiteDB.Exec("DELETE FROM resumes")
 	DB.SQLiteDB.Exec("DELETE FROM linkedin_resumes")
+	DB.SQLiteDB.Exec("DELETE FROM chat_prompt_history")
 	return nil
 }
 

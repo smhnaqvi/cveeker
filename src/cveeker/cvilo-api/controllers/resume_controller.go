@@ -74,8 +74,16 @@ func (rc *ResumeController) GetResume(c *gin.Context) {
 		return
 	}
 
+	var resumePrompts models.ChatPromptHistory
+	prompts, err := resumePrompts.GetByResumeID(resume.ID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to retrieve resume prompts"})
+		return
+	}
+
 	utils.Success(c, "Resumes retrieved successfully", gin.H{
-		"resume": resume,
+		"resume":  resume,
+		"prompts": prompts,
 	})
 }
 

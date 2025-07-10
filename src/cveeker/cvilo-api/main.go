@@ -51,6 +51,7 @@ func main() {
 	resumeController := controllers.NewResumeController()
 	linkedInController := controllers.NewLinkedInController()
 	aiController := controllers.NewAIController()
+	chatHistoryController := controllers.NewChatHistoryController()
 
 	// Initialize router
 	router := gin.Default()
@@ -159,6 +160,17 @@ func main() {
 			ai.POST("/users/:user_id/generate", aiController.GenerateResumeFromPromptWithID)                // Generate resume for specific user
 			ai.POST("/users/:user_id/resumes/:resume_id/update", aiController.UpdateResumeFromPromptWithID) // Update specific resume
 		}
+
+		// Chat History routes
+		chatHistory := v1.Group("/chat-history")
+		{
+			chatHistory.GET("/resumes/:resume_id", chatHistoryController.GetChatHistoryByResume)       // Get chat history for a resume
+			chatHistory.GET("/resumes/:resume_id/recent", chatHistoryController.GetRecentChatHistory)  // Get recent chat history for a resume
+			chatHistory.GET("/users/:user_id", chatHistoryController.GetChatHistoryByUser)             // Get all chat history for a user
+			chatHistory.GET("/users/:user_id/stats", chatHistoryController.GetChatHistoryStats)        // Get chat history statistics
+			chatHistory.DELETE("/:id", chatHistoryController.DeleteChatHistory)                        // Delete specific chat history entry
+			chatHistory.DELETE("/resumes/:resume_id", chatHistoryController.DeleteChatHistoryByResume) // Delete all chat history for a resume
+		}
 	}
 
 	// API documentation endpoint
@@ -215,6 +227,14 @@ func main() {
 					"POST /ai/update":                                   "Update existing resume from prompt",
 					"POST /ai/users/:user_id/generate":                  "Generate resume for specific user",
 					"POST /ai/users/:user_id/resumes/:resume_id/update": "Update specific resume",
+				},
+				"chat_history": gin.H{
+					"GET /chat-history/resumes/:resume_id":        "Get chat history for a resume",
+					"GET /chat-history/resumes/:resume_id/recent": "Get recent chat history for a resume",
+					"GET /chat-history/users/:user_id":            "Get all chat history for a user",
+					"GET /chat-history/users/:user_id/stats":      "Get chat history statistics",
+					"DELETE /chat-history/:id":                    "Delete specific chat history entry",
+					"DELETE /chat-history/resumes/:resume_id":     "Delete all chat history for a resume",
 				},
 			},
 			"sample_requests": gin.H{
