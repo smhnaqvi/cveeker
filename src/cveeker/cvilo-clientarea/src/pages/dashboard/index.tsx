@@ -314,7 +314,6 @@ export default function Dashboard() {
 
         {/* Resume Preview Panel */}
         <Stack width={{ xs: '100%', md: '65%' }} gap={2}>
-          <Typography variant="h6">Resume Preview</Typography>
           {formData && <MultiPageResumePreview data={formData} />}
         </Stack>
       </Stack>

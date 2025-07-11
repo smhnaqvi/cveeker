@@ -4,6 +4,12 @@ export interface ResumeTheme {
   description: string;
   preview: string;
   category: 'modern' | 'classic' | 'creative' | 'minimalist';
+  layout: {
+    headerStyle: 'centered' | 'left-aligned' | 'split' | 'minimal' | 'creative';
+    showHeaderBorder?: boolean;
+    headerSpacing?: string;
+    contactLayout?: 'inline' | 'stacked' | 'grid';
+  };
   styles: {
     container: {
       backgroundColor: string;
@@ -50,6 +56,12 @@ export const resumeThemes: ResumeTheme[] = [
     description: 'Clean and professional with blue accents',
     preview: 'Modern design with blue color scheme',
     category: 'modern',
+    layout: {
+      headerStyle: 'centered',
+      showHeaderBorder: true,
+      headerSpacing: '20px',
+      contactLayout: 'inline',
+    },
     styles: {
       container: {
         backgroundColor: '#ffffff',
@@ -93,6 +105,12 @@ export const resumeThemes: ResumeTheme[] = [
     description: 'Traditional dark theme for formal resumes',
     preview: 'Traditional dark theme',
     category: 'classic',
+    layout: {
+      headerStyle: 'left-aligned',
+      showHeaderBorder: false,
+      headerSpacing: '15px',
+      contactLayout: 'stacked',
+    },
     styles: {
       container: {
         backgroundColor: '#2c3e50',
@@ -136,6 +154,12 @@ export const resumeThemes: ResumeTheme[] = [
     description: 'Modern gradient design with creative elements',
     preview: 'Creative gradient theme',
     category: 'creative',
+    layout: {
+      headerStyle: 'creative',
+      showHeaderBorder: true,
+      headerSpacing: '25px',
+      contactLayout: 'grid',
+    },
     styles: {
       container: {
         backgroundColor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -179,6 +203,12 @@ export const resumeThemes: ResumeTheme[] = [
     description: 'Clean and minimal with subtle gray tones',
     preview: 'Minimalist gray theme',
     category: 'minimalist',
+    layout: {
+      headerStyle: 'minimal',
+      showHeaderBorder: false,
+      headerSpacing: '10px',
+      contactLayout: 'inline',
+    },
     styles: {
       container: {
         backgroundColor: '#f8f9fa',
@@ -223,6 +253,12 @@ export const resumeThemes: ResumeTheme[] = [
     description: 'Professional theme with green accents',
     preview: 'Professional green theme',
     category: 'modern',
+    layout: {
+      headerStyle: 'centered',
+      showHeaderBorder: true,
+      headerSpacing: '20px',
+      contactLayout: 'inline',
+    },
     styles: {
       container: {
         backgroundColor: '#ffffff',
@@ -266,6 +302,12 @@ export const resumeThemes: ResumeTheme[] = [
     description: 'Elegant design with purple and gold accents',
     preview: 'Elegant purple theme',
     category: 'creative',
+    layout: {
+      headerStyle: 'creative',
+      showHeaderBorder: true,
+      headerSpacing: '25px',
+      contactLayout: 'grid',
+    },
     styles: {
       container: {
         backgroundColor: '#ffffff',
@@ -309,6 +351,12 @@ export const resumeThemes: ResumeTheme[] = [
     description: 'Modern tech-inspired dark theme',
     preview: 'Tech dark theme',
     category: 'modern',
+    layout: {
+      headerStyle: 'centered',
+      showHeaderBorder: true,
+      headerSpacing: '20px',
+      contactLayout: 'inline',
+    },
     styles: {
       container: {
         backgroundColor: '#1a202c',
@@ -352,6 +400,12 @@ export const resumeThemes: ResumeTheme[] = [
     description: 'Ultra-clean white theme with black accents',
     preview: 'Clean white theme',
     category: 'minimalist',
+    layout: {
+      headerStyle: 'minimal',
+      showHeaderBorder: false,
+      headerSpacing: '10px',
+      contactLayout: 'inline',
+    },
     styles: {
       container: {
         backgroundColor: '#ffffff',
@@ -387,6 +441,154 @@ export const resumeThemes: ResumeTheme[] = [
         backgroundColor: '#f0f0f0',
         color: '#000000',
         borderColor: '#000000',
+      },
+    },
+  },
+  {
+    id: 'split-layout',
+    name: 'Split Layout',
+    description: 'Modern split layout with name and contact on opposite sides',
+    preview: 'Split layout theme',
+    category: 'modern',
+    layout: {
+      headerStyle: 'split',
+      showHeaderBorder: true,
+      headerSpacing: '25px',
+      contactLayout: 'stacked',
+    },
+    styles: {
+      container: {
+        backgroundColor: '#ffffff',
+        color: '#2c3e50',
+        fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
+        padding: '32px',
+        borderRadius: '8px',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+      },
+      header: {
+        nameColor: '#2c3e50',
+        nameFontSize: '2.5rem',
+        nameFontWeight: '600',
+        contactColor: '#7f8c8d',
+        contactFontSize: '1rem',
+      },
+      section: {
+        titleColor: '#2c3e50',
+        titleFontSize: '1.25rem',
+        titleFontWeight: '600',
+        titleMarginBottom: '16px',
+        dividerColor: '#3498db',
+        dividerMargin: '24px 0',
+      },
+      content: {
+        primaryColor: '#2c3e50',
+        secondaryColor: '#7f8c8d',
+        accentColor: '#3498db',
+        fontSize: '0.9rem',
+        lineHeight: '1.6',
+      },
+      chip: {
+        backgroundColor: '#3498db',
+        color: '#ffffff',
+      },
+    },
+  },
+  {
+    id: 'minimalist-clean',
+    name: 'Minimalist Clean',
+    description: 'Ultra-minimal design with clean typography',
+    preview: 'Minimalist clean theme',
+    category: 'minimalist',
+    layout: {
+      headerStyle: 'minimal',
+      showHeaderBorder: false,
+      headerSpacing: '15px',
+      contactLayout: 'inline',
+    },
+    styles: {
+      container: {
+        backgroundColor: '#ffffff',
+        color: '#1a1a1a',
+        fontFamily: '"Inter", "Helvetica Neue", sans-serif',
+        padding: '24px',
+        borderRadius: '0px',
+        boxShadow: 'none',
+      },
+      header: {
+        nameColor: '#1a1a1a',
+        nameFontSize: '2rem',
+        nameFontWeight: '300',
+        contactColor: '#666666',
+        contactFontSize: '0.9rem',
+      },
+      section: {
+        titleColor: '#1a1a1a',
+        titleFontSize: '1.1rem',
+        titleFontWeight: '400',
+        titleMarginBottom: '12px',
+        dividerColor: '#e0e0e0',
+        dividerMargin: '16px 0',
+      },
+      content: {
+        primaryColor: '#1a1a1a',
+        secondaryColor: '#666666',
+        accentColor: '#1a1a1a',
+        fontSize: '0.85rem',
+        lineHeight: '1.5',
+      },
+      chip: {
+        backgroundColor: '#f5f5f5',
+        color: '#1a1a1a',
+        borderColor: '#e0e0e0',
+      },
+    },
+  },
+  {
+    id: 'creative-modern',
+    name: 'Creative Modern',
+    description: 'Creative layout with modern design elements',
+    preview: 'Creative modern theme',
+    category: 'creative',
+    layout: {
+      headerStyle: 'creative',
+      showHeaderBorder: true,
+      headerSpacing: '30px',
+      contactLayout: 'grid',
+    },
+    styles: {
+      container: {
+        backgroundColor: '#ffffff',
+        color: '#2d3748',
+        fontFamily: '"Poppins", "Segoe UI", sans-serif',
+        padding: '36px',
+        borderRadius: '16px',
+        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
+      },
+      header: {
+        nameColor: '#2d3748',
+        nameFontSize: '2.8rem',
+        nameFontWeight: '700',
+        contactColor: '#718096',
+        contactFontSize: '1.1rem',
+      },
+      section: {
+        titleColor: '#2d3748',
+        titleFontSize: '1.4rem',
+        titleFontWeight: '600',
+        titleMarginBottom: '18px',
+        dividerColor: '#805ad5',
+        dividerMargin: '28px 0',
+      },
+      content: {
+        primaryColor: '#2d3748',
+        secondaryColor: '#718096',
+        accentColor: '#805ad5',
+        fontSize: '0.95rem',
+        lineHeight: '1.65',
+      },
+      chip: {
+        backgroundColor: '#805ad5',
+        color: '#ffffff',
       },
     },
   },
