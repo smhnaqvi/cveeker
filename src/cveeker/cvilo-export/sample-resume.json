@@ -1,0 +1,221 @@
+{
+  "name": "John Doe",
+  "title": "Senior Frontend Developer",
+  "email": "john@example.com",
+  "phone": "+1234567890",
+  "linkedin": "linkedin.com/in/johndoe",
+  "summary": "Experienced frontend developer with expertise in React.js and clean UI design. Passionate about creating user-friendly applications and optimizing performance. Strong problem-solving skills and ability to work in collaborative environments.",
+  "skills": [
+    "React",
+    "TypeScript",
+    "JavaScript",
+    "Node.js",
+    "Next.js",
+    "Vue.js",
+    "Angular",
+    "HTML5",
+    "CSS3",
+    "SASS/SCSS",
+    "Tailwind CSS",
+    "Bootstrap",
+    "Redux",
+    "Zustand",
+    "GraphQL",
+    "REST APIs",
+    "MongoDB",
+    "PostgreSQL",
+    "MySQL",
+    "Docker",
+    "AWS",
+    "Google Cloud",
+    "Azure",
+    "Git",
+    "GitHub",
+    "CI/CD",
+    "Jest",
+    "Cypress",
+    "Webpack",
+    "Vite",
+    "NPM",
+    "Yarn",
+    "Agile",
+    "Scrum",
+    "JIRA",
+    "Figma",
+    "Adobe XD"
+  ],
+  "experience": [
+    {
+      "role": "Senior Frontend Developer",
+      "company": "Philia",
+      "duration": "June 2023 – Present",
+      "points": [
+        "Led development of scalable UI components in React with TypeScript, improving code maintainability by 40%",
+        "Improved page load time by 30% through code optimization, lazy loading, and implementing advanced caching strategies",
+        "Collaborated with backend team for REST API integration and designed efficient data flow patterns",
+        "Implemented responsive design principles across all applications ensuring cross-platform compatibility",
+        "Mentored junior developers and conducted code reviews, establishing best practices and coding standards",
+        "Architected and implemented state management solutions using Redux Toolkit and React Query",
+        "Optimized bundle size by 25% through code splitting and tree shaking techniques",
+        "Implemented comprehensive testing strategies using Jest and React Testing Library"
+      ]
+    },
+    {
+      "role": "Frontend Developer",
+      "company": "TechStart Inc.",
+      "duration": "January 2022 – May 2023",
+      "points": [
+        "Built and maintained client websites using modern web technologies including React, Vue.js, and vanilla JavaScript",
+        "Worked with design team to implement pixel-perfect UI designs and ensure brand consistency",
+        "Participated in agile development processes and sprint planning, contributing to team velocity improvements",
+        "Developed reusable component libraries that reduced development time by 35%",
+        "Implemented SEO best practices and improved search engine rankings for client websites",
+        "Collaborated with UX designers to create intuitive user interfaces and improve user experience",
+        "Integrated third-party APIs and payment gateways for e-commerce functionality",
+        "Maintained and optimized existing codebases, fixing bugs and improving performance"
+      ]
+    },
+    {
+      "role": "Junior Web Developer",
+      "company": "Digital Solutions Co.",
+      "duration": "March 2021 – December 2021",
+      "points": [
+        "Developed responsive websites using HTML5, CSS3, and JavaScript for various clients",
+        "Created custom WordPress themes and plugins to meet specific client requirements",
+        "Optimized website performance and loading speeds through image optimization and caching",
+        "Collaborated with senior developers on larger projects and learned industry best practices",
+        "Implemented Google Analytics and other tracking tools for client websites",
+        "Provided technical support and maintenance for existing client websites",
+        "Participated in client meetings to understand requirements and provide technical solutions"
+      ]
+    }
+  ],
+  "education": {
+    "degree": "Associate's in Computer Software Engineering",
+    "school": "Islamic Azad University",
+    "year": "2019",
+    "details": "GPA: 3.8/4.0 • Dean's List • Graduated with Honors"
+  },
+  "certifications": [
+    {
+      "name": "AWS Certified Developer Associate",
+      "issuer": "Amazon Web Services",
+      "year": "2023"
+    },
+    {
+      "name": "Google Cloud Professional Cloud Developer",
+      "issuer": "Google Cloud",
+      "year": "2023"
+    },
+    {
+      "name": "Microsoft Certified: Azure Developer Associate",
+      "issuer": "Microsoft",
+      "year": "2022"
+    },
+    {
+      "name": "Certified Scrum Master (CSM)",
+      "issuer": "Scrum Alliance",
+      "year": "2022"
+    },
+    {
+      "name": "React Developer Certification",
+      "issuer": "Meta",
+      "year": "2021"
+    }
+  ],
+  "projects": [
+    {
+      "name": "E-Commerce Platform",
+      "type": "Personal Project",
+      "year": "2023",
+      "points": [
+        "Built a full-stack e-commerce platform using React, Node.js, and MongoDB",
+        "Implemented real-time inventory management and payment processing with Stripe",
+        "Deployed on AWS with CI/CD pipeline using GitHub Actions",
+        "Achieved 99.9% uptime and handled 10,000+ concurrent users"
+      ]
+    },
+    {
+      "name": "Task Management Application",
+      "type": "Open Source",
+      "year": "2022",
+      "points": [
+        "Developed a collaborative task management app with real-time updates",
+        "Used React, TypeScript, and Socket.io for real-time collaboration",
+        "Implemented drag-and-drop functionality and Kanban board views",
+        "Gained 500+ stars on GitHub and 50+ contributors"
+      ]
+    },
+    {
+      "name": "Weather Dashboard",
+      "type": "Personal Project",
+      "year": "2021",
+      "points": [
+        "Created a responsive weather dashboard using React and OpenWeather API",
+        "Implemented location-based weather forecasting and 7-day predictions",
+        "Added PWA capabilities for offline functionality",
+        "Optimized for mobile devices with touch-friendly interface"
+      ]
+    }
+  ],
+  "languages": [
+    {
+      "name": "English",
+      "proficiency": "Native/Fluent"
+    },
+    {
+      "name": "Spanish",
+      "proficiency": "Professional Working Proficiency"
+    },
+    {
+      "name": "French",
+      "proficiency": "Limited Working Proficiency"
+    }
+  ],
+  "volunteer": [
+    {
+      "role": "Code Mentor",
+      "organization": "Local Coding Bootcamp",
+      "duration": "2022 – Present",
+      "points": [
+        "Mentor students in web development fundamentals and modern frameworks",
+        "Conduct code reviews and provide constructive feedback to improve coding practices",
+        "Organize workshops on React, JavaScript, and frontend development best practices",
+        "Help students build portfolio projects and prepare for technical interviews"
+      ]
+    },
+    {
+      "role": "Open Source Contributor",
+      "organization": "Various Projects",
+      "duration": "2021 – Present",
+      "points": [
+        "Contributed to popular open-source projects including React, Vue.js, and development tools",
+        "Fixed bugs, improved documentation, and added new features to community projects",
+        "Participated in hackathons and coding competitions",
+        "Maintained several personal open-source projects with 1000+ downloads"
+      ]
+    }
+  ],
+  "awards": [
+    {
+      "name": "Best Developer Award",
+      "issuer": "TechStart Inc.",
+      "year": "2023"
+    },
+    {
+      "name": "Innovation Excellence",
+      "issuer": "Philia",
+      "year": "2023"
+    },
+    {
+      "name": "Community Contributor",
+      "issuer": "GitHub",
+      "year": "2022"
+    },
+    {
+      "name": "Dean's List",
+      "issuer": "Islamic Azad University",
+      "year": "2018-2019"
+    }
+  ]
+} 

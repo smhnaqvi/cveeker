@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Resume Builder</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      gap: 20px;
+    }
+    
+    .form-section {
+      flex: 1;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .preview-section {
+      flex: 2;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    .form-group input, .form-group textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    .form-group textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    
+    .btn {
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      margin-right: 10px;
+    }
+    
+    .btn:hover {
+      background-color: #229954;
+    }
+    
+    .btn:disabled {
+      background-color: #bdc3c7;
+      cursor: not-allowed;
+    }
+    
+    .btn-secondary {
+      background-color: #3498db;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #2980b9;
+    }
+    
+    .resume-container {
+      max-width: 595px;
+      margin: 0 auto;
+      background: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .resume-content {
+      padding: 40px;
+      line-height: 1.4;
+      font-size: 12px;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      border-bottom: 2px solid #333;
+      padding-bottom: 20px;
+    }
+    
+    .name {
+      font-size: 24px;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 5px;
+    }
+    
+    .title {
+      font-size: 16px;
+      color: #7f8c8d;
+      margin-bottom: 15px;
+    }
+    
+    .contact-info {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+      font-size: 14px;
+      color: #34495e;
+    }
+    
+    .section {
+      margin-bottom: 25px;
+    }
+    
+    .section-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: #2c3e50;
+      border-bottom: 1px solid #bdc3c7;
+      padding-bottom: 5px;
+      margin-bottom: 15px;
+    }
+    
+    .summary {
+      text-align: justify;
+      color: #34495e;
+    }
+    
+    .skills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    
+    .skill-tag {
+      background-color: #3498db;
+      color: white;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 500;
+    }
+    
+    .experience-item {
+      margin-bottom: 20px;
+    }
+    
+    .experience-header {
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 5px;
+    }
+    
+    .experience-company {
+      color: #7f8c8d;
+      font-style: italic;
+      margin-bottom: 8px;
+    }
+    
+    .experience-points {
+      list-style: none;
+      padding-left: 0;
+    }
+    
+    .experience-points li {
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 5px;
+      color: #34495e;
+    }
+    
+    .experience-points li:before {
+      content: "\2022";
+      position: absolute;
+      left: 0;
+      color: #3498db;
+      font-weight: bold;
+    }
+    
+    .education {
+      color: #34495e;
+    }
+    
+    .button-container {
+      text-align: center;
+      margin: 20px 0;
+    }
+    
+    .download-btn {
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    .download-btn:hover {
+      background-color: #229954;
+    }
+    
+    .download-btn:disabled {
+      background-color: #bdc3c7;
+      cursor: not-allowed;
+    }
+    
+    @media print {
+      .form-section {
+        display: none;
+      }
+      
+      .preview-section {
+        flex: 1;
+      }
+      
+      body {
+        background: white;
+        padding: 0;
+      }
+      
+      .resume-container {
+        box-shadow: none;
+        border-radius: 0;
+      }
+      
+      .button-container {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="form-section">
+    <h2>Resume Data</h2>
+    <form id="resumeForm">
+      <div class="form-group">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" value="{{.Name}}" onchange="updatePreview()">
+      </div>
+      
+      <div class="form-group">
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" value="{{.Title}}" onchange="updatePreview()">
+      </div>
+      
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" value="{{.Email}}" onchange="updatePreview()">
+      </div>
+      
+      <div class="form-group">
+        <label for="phone">Phone:</label>
+        <input type="text" id="phone" name="phone" value="{{.Phone}}" onchange="updatePreview()">
+      </div>
+      
+      <div class="form-group">
+        <label for="linkedin">LinkedIn:</label>
+        <input type="text" id="linkedin" name="linkedin" value="{{.LinkedIn}}" onchange="updatePreview()">
+      </div>
+      
+      <div class="form-group">
+        <label for="summary">Summary:</label>
+        <textarea id="summary" name="summary" onchange="updatePreview()">{{.Summary}}</textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="skills">Skills (comma-separated):</label>
+        <input type="text" id="skills" name="skills" value="{{range .Skills}}{{.}}, {{end}}" onchange="updatePreview()">
+      </div>
+      
+      <div class="form-group">
+        <label for="degree">Degree:</label>
+        <input type="text" id="degree" name="degree" value="{{.Education.Degree}}" onchange="updatePreview()">
+      </div>
+      
+      <div class="form-group">
+        <label for="school">School:</label>
+        <input type="text" id="school" name="school" value="{{.Education.School}}" onchange="updatePreview()">
+      </div>
+      
+      <div class="form-group">
+        <label for="year">Year:</label>
+        <input type="text" id="year" name="year" value="{{.Education.Year}}" onchange="updatePreview()">
+      </div>
+      
+      <div class="form-group">
+        <label for="details">Education Details:</label>
+        <textarea id="details" name="details" onchange="updatePreview()">{{.Education.Details}}</textarea>
+      </div>
+      
+      <div class="button-container">
+        <button type="button" class="btn" onclick="updatePreview()">Update Preview</button>
+        <button type="button" class="btn btn-secondary" onclick="generatePDF()">Generate PDF</button>
+      </div>
+    </form>
+  </div>
+  
+  <div class="preview-section">
+    <h2>Resume Preview</h2>
+    <div class="resume-container">
+      <div class="resume-content" id="resumeContent">
+        <div class="header">
+          <div class="name" id="previewName">{{.Name}}</div>
+          <div class="title" id="previewTitle">{{.Title}}</div>
+          <div class="contact-info">
+            <span>📧 <span id="previewEmail">{{.Email}}</span></span>
+            <span>📱 <span id="previewPhone">{{.Phone}}</span></span>
+            <span>💼 <span id="previewLinkedIn">{{.LinkedIn}}</span></span>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Professional Summary</div>
+          <div class="summary" id="previewSummary">
+            {{.Summary}}
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Skills</div>
+          <div class="skills" id="previewSkills">
+            {{range .Skills}}
+            <span class="skill-tag">{{.}}</span>
+            {{end}}
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Experience</div>
+          {{range .Experience}}
+          <div class="experience-item">
+            <div class="experience-header">{{.Role}}</div>
+            <div class="experience-company">{{.Company}} • {{.Duration}}</div>
+            <ul class="experience-points">
+              {{range .Points}}
+              <li>{{.}}</li>
+              {{end}}
+            </ul>
+          </div>
+          {{end}}
+        </div>
+
+        <div class="section">
+          <div class="section-title">Education</div>
+          <div class="education">
+            <strong id="previewDegree">{{.Education.Degree}}</strong><br>
+            <span id="previewSchool">{{.Education.School}}</span> • <span id="previewYear">{{.Education.Year}}</span><br>
+            <em id="previewDetails">{{.Education.Details}}</em>
+          </div>
+        </div>
+
+        {{if .Certifications}}
+        <div class="section">
+          <div class="section-title">Certifications</div>
+          <div class="education">
+            {{range .Certifications}}
+            <strong>{{.Name}}</strong> • {{.Issuer}} • {{.Year}}<br>
+            {{end}}
+          </div>
+        </div>
+        {{end}}
+
+        {{if .Projects}}
+        <div class="section">
+          <div class="section-title">Projects</div>
+          {{range .Projects}}
+          <div class="experience-item">
+            <div class="experience-header">{{.Name}}</div>
+            <div class="experience-company">{{.Type}} • {{.Year}}</div>
+            <ul class="experience-points">
+              {{range .Points}}
+              <li>{{.}}</li>
+              {{end}}
+            </ul>
+          </div>
+          {{end}}
+        </div>
+        {{end}}
+
+        {{if .Languages}}
+        <div class="section">
+          <div class="section-title">Languages</div>
+          <div class="education">
+            {{range .Languages}}
+            <strong>{{.Name}}</strong> • {{.Proficiency}}<br>
+            {{end}}
+          </div>
+        </div>
+        {{end}}
+
+        {{if .Volunteer}}
+        <div class="section">
+          <div class="section-title">Volunteer Experience</div>
+          {{range .Volunteer}}
+          <div class="experience-item">
+            <div class="experience-header">{{.Role}}</div>
+            <div class="experience-company">{{.Organization}} • {{.Duration}}</div>
+            <ul class="experience-points">
+              {{range .Points}}
+              <li>{{.}}</li>
+              {{end}}
+            </ul>
+          </div>
+          {{end}}
+        </div>
+        {{end}}
+
+        {{if .Awards}}
+        <div class="section">
+          <div class="section-title">Awards & Recognition</div>
+          <div class="education">
+            {{range .Awards}}
+            <strong>{{.Name}}</strong> • {{.Issuer}} • {{.Year}}<br>
+            {{end}}
+          </div>
+        </div>
+        {{end}}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function updatePreview() {
+    const name = document.getElementById('name').value;
+    const title = document.getElementById('title').value;
+    const email = document.getElementById('email').value;
+    const phone = document.getElementById('phone').value;
+    const linkedin = document.getElementById('linkedin').value;
+    const summary = document.getElementById('summary').value;
+    const skills = document.getElementById('skills').value;
+    const degree = document.getElementById('degree').value;
+    const school = document.getElementById('school').value;
+    const year = document.getElementById('year').value;
+    const details = document.getElementById('details').value;
+    
+    // Update preview
+    document.getElementById('previewName').textContent = name;
+    document.getElementById('previewTitle').textContent = title;
+    document.getElementById('previewEmail').textContent = email;
+    document.getElementById('previewPhone').textContent = phone;
+    document.getElementById('previewLinkedIn').textContent = linkedin;
+    document.getElementById('previewSummary').textContent = summary;
+    document.getElementById('previewDegree').textContent = degree;
+    document.getElementById('previewSchool').textContent = school;
+    document.getElementById('previewYear').textContent = year;
+    document.getElementById('previewDetails').textContent = details;
+    
+    // Update skills
+    const skillsArray = skills.split(',').map(s => s.trim()).filter(s => s);
+    const skillsContainer = document.getElementById('previewSkills');
+    skillsContainer.innerHTML = skillsArray.map(skill => `<span class="skill-tag">${skill}</span>`).join('');
+  }
+  
+  async function generatePDF() {
+    const name = document.getElementById('name').value;
+    const title = document.getElementById('title').value;
+    const email = document.getElementById('email').value;
+    const phone = document.getElementById('phone').value;
+    const linkedin = document.getElementById('linkedin').value;
+    const summary = document.getElementById('summary').value;
+    const skills = document.getElementById('skills').value;
+    const degree = document.getElementById('degree').value;
+    const school = document.getElementById('school').value;
+    const year = document.getElementById('year').value;
+    const details = document.getElementById('details').value;
+    
+    // Prepare resume data
+    const resumeData = {
+      name: name,
+      title: title,
+      email: email,
+      phone: phone,
+      linkedin: linkedin,
+      summary: summary,
+      skills: skills.split(',').map(s => s.trim()).filter(s => s),
+      experience: [
+        {
+          role: "Senior Software Engineer",
+          company: "Tech Corp",
+          duration: "2020 - Present",
+          points: [
+            "Led development of microservices architecture",
+            "Improved system performance by 40%",
+            "Mentored junior developers"
+          ]
+        }
+      ],
+      education: {
+        degree: degree,
+        school: school,
+        year: year,
+        details: details
+      },
+      certifications: [],
+      projects: [],
+      languages: [],
+      volunteer: [],
+      awards: []
+    };
+    
+    try {
+      const response = await fetch('/generate-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(resumeData)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to generate PDF');
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'resume.pdf';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Error generating PDF. Please try again.');
+    }
+  }
+  
+  // Initialize preview on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    updatePreview();
+  });
+</script>
+
+</body>
+</html> 

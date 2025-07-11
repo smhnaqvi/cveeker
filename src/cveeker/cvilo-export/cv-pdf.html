@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0; padding: 0; min-height: 100vh;">
+<head>
+  <meta charset="UTF-8">
+  <title>{{.Name}} - Resume</title>
+  <link href="https://fonts.googleapis.com/css?family=Inter:400,600,700,800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    html, body {
+      font-family: 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      width: 100%;
+    }
+    
+    .resume-container {
+      width: 100%;
+      /* max-width: 595px; */
+      /* margin: 0 auto; */
+      background: transparent; /* Slightly off-white for the resume itself */
+      /* padding: 48px 40px; */
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      line-height: 1.7;
+      font-size: 13px;
+      min-height: 100vh;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+      border-bottom: 2px solid #2d3a4a;
+      padding-bottom: 20px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+      border-radius: 8px;
+      padding: 20px;
+    }
+    
+    .name {
+      font-size: 28px;
+      font-weight: 800;
+      color: #2d3a4a;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+      font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    }
+    
+    .title {
+      font-size: 16px;
+      color: #5b6b7a;
+      font-weight: 600;
+      margin-bottom: 12px;
+      letter-spacing: 0.5px;
+    }
+    
+    .contact-info {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: #3d4a5a;
+      font-weight: 500;
+    }
+    
+    .section {
+      padding: 0 25px;
+      margin-bottom: 25px;
+      margin-top: 25px;
+    }
+    
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #27ae60; /* Accent color */
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 4px;
+      margin-bottom: 14px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    
+    .summary {
+      text-align: justify;
+      color: #444;
+      font-size: 13px;
+      font-weight: 400;
+    }
+    
+    .skills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    
+    .skill-tag {
+      background-color: #27ae60;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 14px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      letter-spacing: 0.2px;
+    }
+    
+    .experience-item {
+      margin-bottom: 20px;
+    }
+    
+    .experience-header {
+      font-weight: 700;
+      color: #2d3a4a;
+      font-size: 13.5px;
+      margin-bottom: 2px;
+      letter-spacing: 0.2px;
+    }
+    
+    .experience-company {
+      color: #5b6b7a;
+      font-style: italic;
+      margin-bottom: 7px;
+      font-size: 12.5px;
+    }
+    
+    .experience-points {
+      list-style: none;
+      padding-left: 0;
+    }
+    
+    .experience-points li {
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 5px;
+      color: #34495e;
+    }
+    
+    .experience-points li:before {
+      content: "\2022";
+      position: absolute;
+      left: 0;
+      color: #27ae60;
+      font-weight: bold;
+    }
+    
+    .education {
+      color: #3d4a5a;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    
+    @media print {
+      body {
+        background: transparent;
+        padding: 0;
+      }
+      
+      .resume-container {
+        box-shadow: none;
+        border-radius: 0;
+      }
+    }
+  </style>
+</head>
+<body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0; padding: 0; min-height: 100vh;">
+<div class="resume-container">
+  <div class="header">
+    <div class="name">{{.Name}}</div>
+    <div class="title">{{.Title}}</div>
+    <div class="contact-info">
+      <span>Email: {{.Email}}</span>
+      <span>Phone: {{.Phone}}</span>
+      <span>LinkedIn: {{.LinkedIn}}</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Professional Summary</div>
+    <div class="summary">
+      {{.Summary}}
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Skills</div>
+    <div class="skills">
+      {{range .Skills}}
+      <span class="skill-tag">{{.}}</span>
+      {{end}}
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Experience</div>
+    {{range .Experience}}
+    <div class="experience-item">
+      <div class="experience-header">{{.Role}}</div>
+      <div class="experience-company">{{.Company}} • {{.Duration}}</div>
+      <ul class="experience-points">
+        {{range .Points}}
+        <li>{{.}}</li>
+        {{end}}
+      </ul>
+    </div>
+    {{end}}
+  </div>
+
+  <div class="section">
+    <div class="section-title">Education</div>
+    <div class="education">
+      <strong>{{.Education.Degree}}</strong><br>
+      {{.Education.School}} • {{.Education.Year}}<br>
+      <em>{{.Education.Details}}</em>
+    </div>
+  </div>
+
+  {{if .Certifications}}
+  <div class="section">
+    <div class="section-title">Certifications</div>
+    <div class="education">
+      {{range .Certifications}}
+      <strong>{{.Name}}</strong> • {{.Issuer}} • {{.Year}}<br>
+      {{end}}
+    </div>
+  </div>
+  {{end}}
+
+  {{if .Projects}}
+  <div class="section">
+    <div class="section-title">Projects</div>
+    {{range .Projects}}
+    <div class="experience-item">
+      <div class="experience-header">{{.Name}}</div>
+      <div class="experience-company">{{.Type}} • {{.Year}}</div>
+      <ul class="experience-points">
+        {{range .Points}}
+        <li>{{.}}</li>
+        {{end}}
+      </ul>
+    </div>
+    {{end}}
+  </div>
+  {{end}}
+
+  {{if .Languages}}
+  <div class="section">
+    <div class="section-title">Languages</div>
+    <div class="education">
+      {{range .Languages}}
+      <strong>{{.Name}}</strong> • {{.Proficiency}}<br>
+      {{end}}
+    </div>
+  </div>
+  {{end}}
+
+  {{if .Volunteer}}
+  <div class="section">
+    <div class="section-title">Volunteer Experience</div>
+    {{range .Volunteer}}
+    <div class="experience-item">
+      <div class="experience-header">{{.Role}}</div>
+      <div class="experience-company">{{.Organization}} • {{.Duration}}</div>
+      <ul class="experience-points">
+        {{range .Points}}
+        <li>{{.}}</li>
+        {{end}}
+      </ul>
+    </div>
+    {{end}}
+  </div>
+  {{end}}
+
+  {{if .Awards}}
+  <div class="section">
+    <div class="section-title">Awards & Recognition</div>
+    <div class="education">
+      {{range .Awards}}
+      <strong>{{.Name}}</strong> • {{.Issuer}} • {{.Year}}<br>
+      {{end}}
+    </div>
+  </div>
+  {{end}}
+</div>
+
+</body>
+</html> 
