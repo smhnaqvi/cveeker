@@ -1,0 +1,47 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+docs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+temp/
+
+# Test files
+*_test.go
+test_*
+
+# Build artifacts
+main
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Environment files (copy manually if needed)
+.env
+.env.local
+.env.production
+
+# Generated PDFs
+*.pdf
+
+# Coverage reports
+coverage.out
+coverage.html 

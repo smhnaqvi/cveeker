@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  # Go API Service - Development
+  cvilo-api:
+    build:
+      context: ./cvilo-api
+      dockerfile: Dockerfile.dev
+    environment:
+      - GIN_MODE=debug
+    volumes:
+      - ./cvilo-api:/app
+      - /app/tmp
+    command: ["go", "run", "main.go"]
+    ports:
+      - "8081:8081"
+
+  # Go PDF Export Service - Development
+  cvilo-export:
+    build:
+      context: ./cvilo-export
+      dockerfile: Dockerfile.dev
+    environment:
+      - DEBUG=true
+    volumes:
+      - ./cvilo-export:/app
+      - /app/tmp
+    command: ["go", "run", "main.go"]
+    ports:
+      - "8082:8082"
+
+  # React Client Dashboard - Development
+  cvilo-clientarea:
+    build:
+      context: ./cvilo-clientarea
+      dockerfile: Dockerfile.dev
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./cvilo-clientarea:/app
+      - /app/node_modules
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+    ports:
+      - "3009:3009"
+
+  # React Landing Page - Development
+  cvilo-landing:
+    build:
+      context: ./cvilo-landing
+      dockerfile: Dockerfile.dev
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./cvilo-landing:/app
+      - /app/node_modules
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+    ports:
+      - "3000:3000"
+
+  # Next.js Landing Page - Development
+  cvilo-landing-nextjs:
+    build:
+      context: ./cvilo-landing-nextjs
+      dockerfile: Dockerfile.dev
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./cvilo-landing-nextjs:/app
+      - /app/node_modules
+      - /app/.next
+    command: ["npm", "run", "dev"]
+    ports:
+      - "3001:3001"
+
+  # Nginx - Development (simplified)
+  nginx:
+    volumes:
+      - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro 
