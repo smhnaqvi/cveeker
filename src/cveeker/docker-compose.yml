@@ -14,27 +14,25 @@ services:
     volumes:
       - ./cvilo-api:/app
       - /app/tmp
-    depends_on:
-      - cvilo-export
     networks:
       - cvilo-network
     restart: unless-stopped
 
-  # Go PDF Export Service
-  cvilo-export:
-    build:
-      context: ./cvilo-export
-      dockerfile: Dockerfile
-    ports:
-      - "8082:8082"
-    environment:
-      - PORT=8082
-    volumes:
-      - ./cvilo-export:/app
-      - /app/tmp
-    networks:
-      - cvilo-network
-    restart: unless-stopped
+  # Go PDF Export Service (disabled)
+  # cvilo-export:
+  #   build:
+  #     context: ./cvilo-export
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8082:8082"
+  #   environment:
+  #     - PORT=8082
+  #   volumes:
+  #     - ./cvilo-export:/app
+  #     - /app/tmp
+  #   networks:
+  #     - cvilo-network
+  #   restart: unless-stopped
 
   # React Client Dashboard
   cvilo-clientarea:
@@ -45,7 +43,7 @@ services:
       - "3009:3009"
     environment:
       - VITE_API_URL=https://cvilo.com/api
-      - VITE_EXPORT_URL=https://cvilo.com/export
+      # - VITE_EXPORT_URL=https://cvilo.com/export  # Disabled export service
     volumes:
       - ./cvilo-clientarea:/app
       - /app/node_modules
@@ -104,7 +102,7 @@ services:
       - ./nginx/ssl:/etc/nginx/ssl:ro
     depends_on:
       - cvilo-api
-      - cvilo-export
+      # - cvilo-export  # Disabled export service
       - cvilo-clientarea
       - cvilo-landing
       - cvilo-landing-nextjs

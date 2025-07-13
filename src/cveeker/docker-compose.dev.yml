@@ -15,19 +15,19 @@ services:
     ports:
       - "8081:8081"
 
-  # Go PDF Export Service - Development
-  cvilo-export:
-    build:
-      context: ./cvilo-export
-      dockerfile: Dockerfile.dev
-    environment:
-      - DEBUG=true
-    volumes:
-      - ./cvilo-export:/app
-      - /app/tmp
-    command: ["go", "run", "main.go"]
-    ports:
-      - "8082:8082"
+  # Go PDF Export Service - Development (disabled)
+  # cvilo-export:
+  #   build:
+  #     context: ./cvilo-export
+  #     dockerfile: Dockerfile.dev
+  #   environment:
+  #     - DEBUG=true
+  #   volumes:
+  #     - ./cvilo-export:/app
+  #     - /app/tmp
+  #   command: ["go", "run", "main.go"]
+  #   ports:
+  #     - "8082:8082"
 
   # React Client Dashboard - Development
   cvilo-clientarea:
