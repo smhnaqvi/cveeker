@@ -44,8 +44,8 @@ services:
     ports:
       - "3009:3009"
     environment:
-      - VITE_API_URL=http://cvilo-api:8081
-      - VITE_EXPORT_URL=http://cvilo-export:8082
+      - VITE_API_URL=https://cvilo.com/api
+      - VITE_EXPORT_URL=https://cvilo.com/export
     volumes:
       - ./cvilo-clientarea:/app
       - /app/node_modules
@@ -63,7 +63,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - VITE_API_URL=http://cvilo-api:8081
+      - VITE_API_URL=https://cvilo.com/api
     volumes:
       - ./cvilo-landing:/app
       - /app/node_modules
@@ -81,7 +81,7 @@ services:
     ports:
       - "3001:3001"
     environment:
-      - NEXT_PUBLIC_API_URL=http://cvilo-api:8081
+      - NEXT_PUBLIC_API_URL=https://cvilo.com/api
       - NODE_ENV=production
     volumes:
       - ./cvilo-landing-nextjs:/app
