@@ -1,15 +1,8 @@
 # Build stage
 FROM golang:1.23-alpine AS builder
 
-# Install necessary build tools and C dependencies for SQLite
-RUN apk add --no-cache \
-    git \
-    ca-certificates \
-    tzdata \
-    gcc \
-    musl-dev \
-    sqlite-dev \
-    pkgconfig
+# Install necessary build tools (no C dependencies needed)
+RUN apk add --no-cache git ca-certificates tzdata
 
 # Set working directory
 WORKDIR /app
@@ -17,23 +10,20 @@ WORKDIR /app
 # Copy go mod files
 COPY go.mod go.sum ./
 
-# Download dependencies
-RUN go mod download
+# Download dependencies (use alternative proxy)
+RUN GOPROXY=https://goproxy.cn,direct go mod download
 
 # Copy source code
 COPY . .
 
-# Build the application
-RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -o main .
+# Build the application (CGO disabled)
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 
 # Final stage
 FROM alpine:latest
 
-# Install necessary runtime dependencies including SQLite
-RUN apk --no-cache add \
-    ca-certificates \
-    tzdata \
-    sqlite
+# Install necessary runtime dependencies
+RUN apk --no-cache add ca-certificates tzdata
 
 # Create non-root user
 RUN addgroup -g 1001 -S appgroup && \
