@@ -24,7 +24,7 @@ RUN go mod download
 COPY . .
 
 # Build the application
-RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -o main .
+RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -o cvilo-api .
 
 # Final stage
 FROM debian:bullseye-slim
@@ -43,7 +43,7 @@ RUN groupadd -g 1001 appgroup && \
 WORKDIR /app
 
 # Copy binary from builder stage
-COPY --from=builder /app/main .
+COPY --from=builder /app/cvilo-api .
 
 # Copy any additional files needed
 COPY --from=builder /app/.env* ./
@@ -62,4 +62,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:8081/ping || exit 1
 
 # Run the application
-CMD ["./main"] 
+CMD ["./cvilo-api"] 

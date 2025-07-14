@@ -16,8 +16,8 @@ RUN GOPROXY=https://goproxy.cn,direct go mod download
 # Copy source code
 COPY . .
 
-# Build the application (CGO disabled)
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
+# Build the application (CGO disabled) - build for linux/amd64
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o cvilo-api .
 
 # Final stage
 FROM alpine:latest
@@ -33,7 +33,7 @@ RUN addgroup -g 1001 -S appgroup && \
 WORKDIR /app
 
 # Copy binary from builder stage
-COPY --from=builder /app/main .
+COPY --from=builder /app/cvilo-api .
 
 # Copy any additional files needed
 COPY --from=builder /app/.env* ./
@@ -52,4 +52,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:8081/ping || exit 1
 
 # Run the application
-CMD ["./main"] 
+CMD ["./cvilo-api"] 

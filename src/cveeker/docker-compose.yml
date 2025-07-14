@@ -53,43 +53,43 @@ services:
       - cvilo-network
     restart: unless-stopped
 
-  # React Landing Page
-  cvilo-landing:
-    build:
-      context: ./cvilo-landing
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    environment:
-      - VITE_API_URL=https://cvilo.com/api
-    volumes:
-      - ./cvilo-landing:/app
-      - /app/node_modules
-    depends_on:
-      - cvilo-api
-    networks:
-      - cvilo-network
-    restart: unless-stopped
+  # React Landing Page (disabled due to build issues)
+  # cvilo-landing:
+  #   build:
+  #     context: ./cvilo-landing
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - VITE_API_URL=https://cvilo.com/api
+  #   volumes:
+  #     - ./cvilo-landing:/app
+  #     - /app/node_modules
+  #   depends_on:
+  #     - cvilo-api
+  #   networks:
+  #     - cvilo-network
+  #   restart: unless-stopped
 
-  # Next.js Landing Page
-  cvilo-landing-nextjs:
-    build:
-      context: ./cvilo-landing-nextjs
-      dockerfile: Dockerfile
-    ports:
-      - "3001:3001"
-    environment:
-      - NEXT_PUBLIC_API_URL=https://cvilo.com/api
-      - NODE_ENV=production
-    volumes:
-      - ./cvilo-landing-nextjs:/app
-      - /app/node_modules
-      - /app/.next
-    depends_on:
-      - cvilo-api
-    networks:
-      - cvilo-network
-    restart: unless-stopped
+  # Next.js Landing Page (disabled due to build issues)
+  # cvilo-landing-nextjs:
+  #   build:
+  #     context: ./cvilo-landing-nextjs
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "3001:3001"
+  #   environment:
+  #     - NEXT_PUBLIC_API_URL=https://cvilo.com/api
+  #     - NODE_ENV=production
+  #   volumes:
+  #     - ./cvilo-landing-nextjs:/app
+  #     - /app/node_modules
+  #     - /app/.next
+  #   depends_on:
+  #     - cvilo-api
+  #   networks:
+  #     - cvilo-network
+  #   restart: unless-stopped
 
   # Nginx Reverse Proxy
   nginx:
@@ -104,8 +104,8 @@ services:
       - cvilo-api
       # - cvilo-export  # Disabled export service
       - cvilo-clientarea
-      - cvilo-landing
-      - cvilo-landing-nextjs
+      # - cvilo-landing  # Disabled due to build issues
+      # - cvilo-landing-nextjs  # Disabled due to build issues
     networks:
       - cvilo-network
     restart: unless-stopped

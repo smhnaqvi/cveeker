@@ -4,8 +4,8 @@ import { authConfig } from '../config/auth'
 
 // Create Supabase client
 export const supabase = createClient(
-  authConfig.supabase.url,
-  authConfig.supabase.anonKey
+  process.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co',
+  process.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key'
 )
 
 // Authentication helper functions
