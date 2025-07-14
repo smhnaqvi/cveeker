@@ -107,7 +107,7 @@ services:
   cvilo-landing-nextjs:
     build:
       context: ./cvilo-landing-nextjs
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.alternative
       target: runner
     ports:
       - "3001:3001"
