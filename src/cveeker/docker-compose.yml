@@ -8,21 +8,11 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8081:8081"
+    env_file:
+      - ./cvilo-api/.env
     environment:
-      - PORT=8081
-      - HOST=0.0.0.0
       - GIN_MODE=release
-      - SQL_CONNECTION=cvilo.db
-      - DB_PATH=cvilo.db
-      - JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-      - CORS_ORIGIN=https://app.cvilo.com
-      - LINKEDIN_CLIENT_ID=77bwkyh7myeqpy
-      - LINKEDIN_CLIENT_SECRET=your-linkedin-client-secret
-      - LINKEDIN_REDIRECT_URL=https://api.cvilo.com/api/v1/linkedin/callback
-      - USE_GITHUB_MODELS=true
-      - GITHUB_TOKEN=your-github-token
-      - GITHUB_MODELS_BASE_URL=https://models.github.ai/inference
-      - OPENAI_API_KEY=your-openai-api-key
+      - HOST=0.0.0.0
     volumes:
       - ./cvilo-api:/app
       - /app/tmp
