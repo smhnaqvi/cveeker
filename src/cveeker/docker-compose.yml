@@ -41,7 +41,6 @@ services:
       - POSTGRES_DB=cvilo_db
       - POSTGRES_SSLMODE=disable
     volumes:
-      - ./cvilo-api:/app
       - /app/tmp
     networks:
       - cvilo-network
