@@ -1,6 +1,27 @@
 version: '3.8'
 
 services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: cvilo_postgres
+    environment:
+      POSTGRES_DB: cvilo_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: cvilo_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - cvilo-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # Go API Service
   cvilo-api:
     build:
@@ -13,11 +34,20 @@ services:
     environment:
       - GIN_MODE=release
       - HOST=0.0.0.0
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=cvilo_password
+      - POSTGRES_DB=cvilo_db
+      - POSTGRES_SSLMODE=disable
     volumes:
       - ./cvilo-api:/app
       - /app/tmp
     networks:
       - cvilo-network
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
 
   # Go PDF Export Service (disabled)
@@ -95,6 +125,23 @@ services:
       - cvilo-network
     restart: unless-stopped
 
+  # Optional: pgAdmin for database management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: cvilo_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@cvilo.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - cvilo-network
+    restart: unless-stopped
+
   # Nginx Reverse Proxy
   nginx:
     image: nginx:alpine
@@ -117,4 +164,6 @@ networks:
     driver: bridge
 
 volumes:
-  app-data: 
+  app-data:
+  postgres_data:
+  pgadmin_data: 
