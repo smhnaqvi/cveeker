@@ -107,17 +107,12 @@ services:
   cvilo-landing-nextjs:
     build:
       context: ./cvilo-landing-nextjs
-      dockerfile: Dockerfile.alternative
-      target: runner
+      dockerfile: Dockerfile
     ports:
       - "3001:3001"
     environment:
       - NEXT_PUBLIC_API_URL=https://api.cvilo.com/api
       - NODE_ENV=production
-    volumes:
-      - ./cvilo-landing-nextjs:/app
-      - /app/node_modules
-      - /app/.next
     depends_on:
       - cvilo-api
     networks:
