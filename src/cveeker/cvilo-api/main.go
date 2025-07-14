@@ -38,7 +38,7 @@ func main() {
 
 	// Check for seed flag
 	if len(os.Args) > 1 && os.Args[1] == "--seed" {
-		if err := utils.SeedDatabase(database.GetSqliteDB()); err != nil {
+		if err := utils.SeedDatabase(database.GetPostgresDB()); err != nil {
 			log.Fatal("Failed to seed database:", err)
 		}
 		log.Println("Database seeding completed. Exiting...")

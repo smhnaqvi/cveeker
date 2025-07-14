@@ -9,12 +9,12 @@ import (
 
 // Auto-migrate the schemas
 func AutoMigrate() error {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	err := db.AutoMigrate(&models.UserModel{}, &models.ResumeModel{}, &models.LinkedInAuthModel{}, &models.ChatPromptHistory{})
 	if err != nil {
 		return err
 	}
 
-	log.Println("Database connected and migrated successfully")
+	log.Println("PostgreSQL database connected and migrated successfully")
 	return nil
 }

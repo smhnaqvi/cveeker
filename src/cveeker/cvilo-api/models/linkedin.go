@@ -104,24 +104,24 @@ func (LinkedInAuthModel) TableName() string {
 
 // CreateLinkedInAuth creates a new LinkedIn authentication record
 func (l *LinkedInAuthModel) Create() error {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	return db.Create(&l).Error
 }
 
 // GetLinkedInAuthByUserID gets LinkedIn auth by user ID
 func (l *LinkedInAuthModel) GetByUserID(userID uint) error {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	return db.Where("user_id = ?", userID).First(&l).Error
 }
 
 // GetByLinkedInID gets LinkedIn auth by LinkedIn ID
 func (l *LinkedInAuthModel) GetByLinkedInID(linkedInID string) error {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	return db.Where("linkedin_id = ?", linkedInID).First(&l).Error
 }
 
 // UpdateLinkedInAuth updates LinkedIn auth record
 func (l *LinkedInAuthModel) Update() error {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	return db.Save(&l).Error
 }

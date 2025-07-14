@@ -29,7 +29,7 @@ func (ChatPromptHistory) TableName() string {
 
 // Create creates a new chat prompt history record
 func (cph *ChatPromptHistory) Create() error {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	if err := db.Create(&cph).Error; err != nil {
 		return err
 	}
@@ -41,7 +41,7 @@ func (cph *ChatPromptHistory) Create() error {
 
 // GetByID retrieves a chat prompt history by ID
 func (cph *ChatPromptHistory) GetByID(id uint) error {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	if err := db.First(&cph, id).Error; err == nil {
 		return nil
 	}
@@ -50,7 +50,7 @@ func (cph *ChatPromptHistory) GetByID(id uint) error {
 
 // GetByResumeID retrieves all chat prompt history for a specific resume
 func (cph *ChatPromptHistory) GetByResumeID(resumeID uint) ([]ChatPromptHistory, error) {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	var history []ChatPromptHistory
 	if err := db.Where("resume_id = ?", resumeID).
 		Order("created_at DESC").
@@ -62,7 +62,7 @@ func (cph *ChatPromptHistory) GetByResumeID(resumeID uint) ([]ChatPromptHistory,
 
 // GetByUserID retrieves all chat prompt history for a specific user
 func (cph *ChatPromptHistory) GetByUserID(userID uint) ([]ChatPromptHistory, error) {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	var history []ChatPromptHistory
 	if err := db.Where("user_id = ?", userID).
 		Order("created_at DESC").
@@ -74,7 +74,7 @@ func (cph *ChatPromptHistory) GetByUserID(userID uint) ([]ChatPromptHistory, err
 
 // GetRecentByResumeID retrieves recent chat prompt history for a resume (last N entries)
 func (cph *ChatPromptHistory) GetRecentByResumeID(resumeID uint, limit int) ([]ChatPromptHistory, error) {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	var history []ChatPromptHistory
 	if err := db.Where("resume_id = ?", resumeID).
 		Order("created_at DESC").
@@ -87,7 +87,7 @@ func (cph *ChatPromptHistory) GetRecentByResumeID(resumeID uint, limit int) ([]C
 
 // Update updates a chat prompt history record
 func (cph *ChatPromptHistory) Update() error {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	if err := db.Save(&cph).Error; err != nil {
 		return err
 	}
@@ -99,7 +99,7 @@ func (cph *ChatPromptHistory) Update() error {
 
 // Delete deletes a chat prompt history record
 func (cph *ChatPromptHistory) Delete(id uint) error {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	if err := db.Delete(&cph, id).Error; err != nil {
 		return err
 	}
@@ -108,7 +108,7 @@ func (cph *ChatPromptHistory) Delete(id uint) error {
 
 // DeleteByResumeID deletes all chat prompt history for a specific resume
 func (cph *ChatPromptHistory) DeleteByResumeID(resumeID uint) error {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	if err := db.Where("resume_id = ?", resumeID).Delete(&ChatPromptHistory{}).Error; err != nil {
 		return err
 	}

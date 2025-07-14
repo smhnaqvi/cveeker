@@ -107,7 +107,7 @@ type UserResponse struct {
 }
 
 func (u *UserModel) Create() error {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	if err := db.Create(&u).Error; err != nil {
 		return err
 	}
@@ -115,7 +115,7 @@ func (u *UserModel) Create() error {
 }
 
 func (u *UserModel) GetUserByEmail(email string) error {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	if err := db.Where("email = ?", email).First(&u).Error; err == nil {
 		return nil
 	}
@@ -123,7 +123,7 @@ func (u *UserModel) GetUserByEmail(email string) error {
 }
 
 func (u *UserModel) GetUserByID(id uint) error {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	if err := db.Where("id = ?", id).First(&u).Error; err == nil {
 		return nil
 	}
@@ -131,7 +131,7 @@ func (u *UserModel) GetUserByID(id uint) error {
 }
 
 func (u *UserModel) GetAllUsers(offset int, limit int) ([]UserModel, int64, error) {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	var users []UserModel
 	var total int64
 	db.Model(&UserModel{}).Count(&total)
@@ -142,7 +142,7 @@ func (u *UserModel) GetAllUsers(offset int, limit int) ([]UserModel, int64, erro
 }
 
 func (u *UserModel) UpdateUser(id uint) error {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	if err := db.Model(&u).Where("id = ?", id).Updates(u).Error; err != nil {
 		return err
 	}
@@ -152,7 +152,7 @@ func (u *UserModel) UpdateUser(id uint) error {
 }
 
 func (u *UserModel) DeleteUserResumes(id uint) error {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	if err := db.Where("user_id = ?", id).Delete(&ResumeModel{}).Error; err != nil {
 		return err
 	}
@@ -160,7 +160,7 @@ func (u *UserModel) DeleteUserResumes(id uint) error {
 }
 
 func (u *UserModel) DeactivateUser(id uint) error {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	if err := db.Model(&u).Where("id = ?", id).Update("is_active", false).Error; err != nil {
 		return err
 	}
@@ -169,7 +169,7 @@ func (u *UserModel) DeactivateUser(id uint) error {
 }
 
 func (u *UserModel) GetUserByChatID(chatID int64) error {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	if err := db.Where("chat_id = ?", chatID).First(&u).Error; err == nil {
 		return nil
 	}

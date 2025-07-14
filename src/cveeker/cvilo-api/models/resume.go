@@ -116,7 +116,7 @@ type Project struct {
 }
 
 func (r *ResumeModel) Create() error {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	if err := db.Create(&r).Error; err != nil {
 		return err
 	}
@@ -128,7 +128,7 @@ func (r *ResumeModel) Create() error {
 }
 
 func (r *ResumeModel) GetResumeByID(id uint) error {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	if err := db.First(&r, id).Error; err == nil {
 		return nil
 	}
@@ -136,7 +136,7 @@ func (r *ResumeModel) GetResumeByID(id uint) error {
 }
 
 func (r *ResumeModel) GetResumesByUserID(userID uint) ([]ResumeModel, error) {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	var resumes []ResumeModel
 	if err := db.Where("user_id = ?", userID).Preload("User").Find(&resumes).Error; err == nil {
 		return resumes, nil
@@ -145,7 +145,7 @@ func (r *ResumeModel) GetResumesByUserID(userID uint) ([]ResumeModel, error) {
 }
 
 func (r *ResumeModel) GetAllResumes(offset int, limit int) ([]ResumeModel, int64, error) {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	var resumes []ResumeModel
 	var total int64
 	db.Model(&ResumeModel{}).Count(&total)
@@ -156,7 +156,7 @@ func (r *ResumeModel) GetAllResumes(offset int, limit int) ([]ResumeModel, int64
 }
 
 func (r *ResumeModel) UpdateResume(id uint, updateData ResumeModel) error {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	if err := db.Model(&r).Updates(updateData).Error; err != nil {
 		return err
 	}
@@ -167,7 +167,7 @@ func (r *ResumeModel) UpdateResume(id uint, updateData ResumeModel) error {
 }
 
 func (r *ResumeModel) DeleteResume(id uint) error {
-	db := database.GetSqliteDB()
+	db := database.GetPostgresDB()
 	if err := db.Delete(&r, id).Error; err != nil {
 		return err
 	}
