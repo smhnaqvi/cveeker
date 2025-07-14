@@ -16,8 +16,43 @@ COPY . .
 # Build the application
 RUN yarn build
 
+# Development stage
+FROM node:20-alpine AS dev
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json yarn.lock ./
+
+# Install dependencies
+RUN yarn install
+
+# Copy source code
+COPY . .
+
+# Create non-root user
+RUN addgroup -g 1001 -S appgroup && \
+    adduser -u 1001 -S appuser -G appgroup
+
+# Change ownership
+RUN chown -R appuser:appgroup /app
+
+# Switch to non-root user
+USER appuser
+
+# Expose port
+EXPOSE 3009
+
+# Set environment
+ENV NODE_ENV=development
+ENV PORT=3009
+
+# Start development server
+CMD ["yarn", "dev"]
+
 # Production stage
-FROM nginx:alpine
+FROM nginx:alpine AS runner
 
 # Copy built application from builder stage
 COPY --from=builder /app/dist /usr/share/nginx/html

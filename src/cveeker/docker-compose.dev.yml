@@ -1,78 +1,82 @@
 version: '3.8'
 
 services:
-  # Go API Service - Development
+  # Go API Service
   cvilo-api:
     build:
       context: ./cvilo-api
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    env_file:
+      - ./cvilo-api/.env
     environment:
       - GIN_MODE=debug
     volumes:
       - ./cvilo-api:/app
       - /app/tmp
-    command: ["go", "run", "main.go"]
-    ports:
-      - "8081:8081"
+    networks:
+      - cvilo-network
+    restart: unless-stopped
 
-  # Go PDF Export Service - Development (disabled)
-  # cvilo-export:
-  #   build:
-  #     context: ./cvilo-export
-  #     dockerfile: Dockerfile.dev
-  #   environment:
-  #     - DEBUG=true
-  #   volumes:
-  #     - ./cvilo-export:/app
-  #     - /app/tmp
-  #   command: ["go", "run", "main.go"]
-  #   ports:
-  #     - "8082:8082"
-
-  # React Client Dashboard - Development
+  # React Client Dashboard
   cvilo-clientarea:
     build:
       context: ./cvilo-clientarea
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
+      target: dev
+    ports:
+      - "3009:3009"
     environment:
-      - NODE_ENV=development
+      - VITE_API_URL=http://localhost/api
     volumes:
       - ./cvilo-clientarea:/app
       - /app/node_modules
-    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
-    ports:
-      - "3009:3009"
+    depends_on:
+      - cvilo-api
+    networks:
+      - cvilo-network
+    restart: unless-stopped
 
-  # React Landing Page - Development
-  cvilo-landing:
-    build:
-      context: ./cvilo-landing
-      dockerfile: Dockerfile.dev
-    environment:
-      - NODE_ENV=development
-    volumes:
-      - ./cvilo-landing:/app
-      - /app/node_modules
-    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
-    ports:
-      - "3000:3000"
-
-  # Next.js Landing Page - Development
+  # Next.js Landing Page (Development)
   cvilo-landing-nextjs:
     build:
       context: ./cvilo-landing-nextjs
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
+      target: dev
+    ports:
+      - "3001:3001"
     environment:
+      - NEXT_PUBLIC_API_URL=http://localhost/api
       - NODE_ENV=development
     volumes:
       - ./cvilo-landing-nextjs:/app
       - /app/node_modules
       - /app/.next
-    command: ["npm", "run", "dev"]
-    ports:
-      - "3001:3001"
+    depends_on:
+      - cvilo-api
+    networks:
+      - cvilo-network
+    restart: unless-stopped
 
-  # Nginx - Development (simplified)
+  # Nginx Reverse Proxy (Development)
   nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
     volumes:
-      - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro 
+      - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - cvilo-api
+      - cvilo-clientarea
+      - cvilo-landing-nextjs
+    networks:
+      - cvilo-network
+    restart: unless-stopped
+
+networks:
+  cvilo-network:
+    driver: bridge
+
+volumes:
+  app-data: 
