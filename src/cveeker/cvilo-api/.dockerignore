@@ -34,8 +34,7 @@ main
 *.so
 *.dylib
 
-# Environment files (copy manually if needed)
-.env
+# Environment files (but allow .env for container)
 .env.local
 .env.production
 

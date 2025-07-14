@@ -1,7 +1,7 @@
-# Build stage
+# Multi-stage build for optimized production image
 FROM golang:1.23-alpine AS builder
 
-# Install necessary build tools
+# Install build dependencies
 RUN apk add --no-cache \
     git \
     ca-certificates \
@@ -13,7 +13,7 @@ RUN apk add --no-cache \
 # Set working directory
 WORKDIR /app
 
-# Copy go mod files
+# Copy go mod files first for better caching
 COPY go.mod go.sum ./
 
 # Download dependencies
@@ -22,19 +22,23 @@ RUN go mod download
 # Copy source code
 COPY . .
 
-# Build the application
-RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -o cvilo-api .
+# Build the application with optimizations
+RUN CGO_ENABLED=1 GOOS=linux go build \
+    -a \
+    -installsuffix cgo \
+    -ldflags="-w -s" \
+    -o cvilo-api .
 
-# Final stage
+# Production stage
 FROM alpine:latest
 
-# Install necessary runtime dependencies including PostgreSQL client
+# Install runtime dependencies
 RUN apk --no-cache add \
     ca-certificates \
     tzdata \
     postgresql-client
 
-# Create non-root user
+# Create non-root user for security
 RUN addgroup -g 1001 -S appgroup && \
     adduser -u 1001 -S appuser -G appgroup
 
@@ -44,10 +48,10 @@ WORKDIR /app
 # Copy binary from builder stage
 COPY --from=builder /app/cvilo-api .
 
-# Copy any additional files needed
+# Copy environment files if they exist
 COPY --from=builder /app/.env* ./
 
-# Change ownership to non-root user
+# Set proper ownership
 RUN chown -R appuser:appgroup /app
 
 # Switch to non-root user
