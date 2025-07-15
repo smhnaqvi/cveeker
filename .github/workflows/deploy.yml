@@ -9,6 +9,14 @@ permissions:
   contents: read
   packages: write  # This is required for pushing to GHCR
 
+env:
+  # Build-time environment variables
+  BUILD_VERSION: ${{ github.sha }}
+  BUILD_DATE: ${{ github.event.head_commit.timestamp }}
+  API_BASE_URL: ${{ secrets.API_BASE_URL }}
+  CLIENT_BASE_URL: ${{ secrets.CLIENT_BASE_URL }}
+  LANDING_BASE_URL: ${{ secrets.LANDING_BASE_URL }}
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -31,22 +39,63 @@ jobs:
         run: |
           IMAGE_NAME=ghcr.io/${{ github.repository }}/cvilo-api
           IMAGE_NAME_LOWER=$(echo $IMAGE_NAME | tr '[A-Z]' '[a-z]')
-          docker build -t $IMAGE_NAME_LOWER:latest ./cvilo-api
+          docker build \
+            --build-arg BUILD_VERSION=$BUILD_VERSION \
+            --build-arg BUILD_DATE=$BUILD_DATE \
+            --build-arg API_BASE_URL=$API_BASE_URL \
+            --build-arg AI_MODEL=${{ secrets.AI_MODEL }} \
+            --build-arg AI_TOKEN=${{ secrets.AI_TOKEN }} \
+            --build-arg AI_URL=${{ secrets.AI_URL }} \
+            --build-arg CORS_ORIGIN=${{ secrets.CORS_ORIGIN }} \
+            --build-arg HOST=${{ secrets.HOST }} \
+            --build-arg JWT_SECRET=${{ secrets.JWT_SECRET }} \
+            --build-arg LINKEDIN_CLIENT_ID=${{ secrets.LINKEDIN_CLIENT_ID }} \
+            --build-arg LINKEDIN_CLIENT_SECRET=${{ secrets.LINKEDIN_CLIENT_SECRET }} \
+            --build-arg LINKEDIN_REDIRECT_URL=${{ secrets.LINKEDIN_REDIRECT_URL }} \
+            --build-arg MODELS_BASE_URL=${{ secrets.MODELS_BASE_URL }} \
+            --build-arg PORT=${{ secrets.PORT }} \
+            --build-arg POSTGRES_DB=${{ secrets.POSTGRES_DB }} \
+            --build-arg POSTGRES_HOST=${{ secrets.POSTGRES_HOST }} \
+            --build-arg POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
+            --build-arg POSTGRES_PORT=${{ secrets.POSTGRES_PORT }} \
+            --build-arg POSTGRES_SSLMODE=${{ secrets.POSTGRES_SSLMODE }} \
+            --build-arg POSTGRES_USER=${{ secrets.POSTGRES_USER }} \
+            --build-arg USE_GITHUB_MODELS=${{ secrets.USE_GITHUB_MODELS }} \
+            -t $IMAGE_NAME_LOWER:latest \
+            -t $IMAGE_NAME_LOWER:$BUILD_VERSION \
+            ./cvilo-api
           docker push $IMAGE_NAME_LOWER:latest
+          docker push $IMAGE_NAME_LOWER:$BUILD_VERSION
 
       - name: Build and push cvilo-clientarea
         run: |
           IMAGE_NAME=ghcr.io/${{ github.repository }}/cvilo-clientarea
           IMAGE_NAME_LOWER=$(echo $IMAGE_NAME | tr '[A-Z]' '[a-z]')
-          docker build -t $IMAGE_NAME_LOWER:latest ./cvilo-clientarea
+          docker build \
+            --build-arg BUILD_VERSION=$BUILD_VERSION \
+            --build-arg BUILD_DATE=$BUILD_DATE \
+            --build-arg VITE_API_URL=$API_BASE_URL \
+            -t $IMAGE_NAME_LOWER:latest \
+            -t $IMAGE_NAME_LOWER:$BUILD_VERSION \
+            ./cvilo-clientarea
           docker push $IMAGE_NAME_LOWER:latest
+          docker push $IMAGE_NAME_LOWER:$BUILD_VERSION
 
       - name: Build and push cvilo-landing-nextjs
         run: |
           IMAGE_NAME=ghcr.io/${{ github.repository }}/cvilo-landing-nextjs
           IMAGE_NAME_LOWER=$(echo $IMAGE_NAME | tr '[A-Z]' '[a-z]')
-          docker build -t $IMAGE_NAME_LOWER:latest ./cvilo-landing-nextjs
+          docker build \
+            --build-arg BUILD_VERSION=$BUILD_VERSION \
+            --build-arg BUILD_DATE=$BUILD_DATE \
+            --build-arg LANDING_BASE_URL=$LANDING_BASE_URL \
+            --build-arg API_BASE_URL=$API_BASE_URL \
+            --build-arg CLIENT_BASE_URL=$CLIENT_BASE_URL \
+            -t $IMAGE_NAME_LOWER:latest \
+            -t $IMAGE_NAME_LOWER:$BUILD_VERSION \
+            ./cvilo-landing-nextjs
           docker push $IMAGE_NAME_LOWER:latest
+          docker push $IMAGE_NAME_LOWER:$BUILD_VERSION
 
   deploy:
     needs: build-and-push

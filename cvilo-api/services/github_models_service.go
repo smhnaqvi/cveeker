@@ -140,28 +140,31 @@ type FlexibleEducation struct {
 
 // NewGitHubModelsService creates a new GitHub Models service instance
 func NewGitHubModelsService() *GitHubModelsService {
-	apiKey := os.Getenv("GITHUB_TOKEN")
-	if apiKey == "" {
-		log.Println("Warning: GITHUB_TOKEN not set for GitHub Models")
+	aiKey := os.Getenv("AI_TOKEN")
+	aiModel := os.Getenv("AI_MODEL")
+	aiURL := os.Getenv("AI_URL")
+
+	if aiKey == "" {
+		log.Println("Warning: AI_TOKEN not set for GitHub Models")
 		return &GitHubModelsService{
 			client: &http.Client{Timeout: 30 * time.Second},
-			apiURL: "https://models.github.ai/inference",
-			model:  "openai/gpt-4.1",
+			apiURL: aiURL,
+			model:  aiModel,
 		}
 	}
 
 	return &GitHubModelsService{
 		client: &http.Client{Timeout: 30 * time.Second},
-		apiURL: "https://models.github.ai/inference",
-		apiKey: apiKey,
-		model:  "openai/gpt-4.1",
+		apiURL: aiURL,
+		apiKey: aiKey,
+		model:  aiModel,
 	}
 }
 
 // GenerateResumeFromPrompt generates a resume using GitHub Models GPT-4o
 func (gms *GitHubModelsService) GenerateResumeFromPrompt(request AIResumeRequest) (*AIResumeResponse, error) {
 	if !gms.IsConfigured() {
-		return nil, fmt.Errorf("GitHub Models not configured - check GITHUB_TOKEN")
+		return nil, fmt.Errorf("GitHub Models not configured - check AI_TOKEN")
 	}
 
 	// Create the system prompt
@@ -294,7 +297,7 @@ Please generate a complete, professional resume in the exact JSON format specifi
 // UpdateResumeFromPrompt updates an existing resume using GitHub Models
 func (gms *GitHubModelsService) UpdateResumeFromPrompt(request AIResumeRequest, existingResume models.ResumeModel) (*AIResumeResponse, error) {
 	if !gms.IsConfigured() {
-		return nil, fmt.Errorf("GitHub Models not configured - check GITHUB_TOKEN")
+		return nil, fmt.Errorf("GitHub Models not configured - check AI_TOKEN")
 	}
 
 	// Create the system prompt for updating

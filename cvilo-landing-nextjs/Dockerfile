@@ -1,6 +1,23 @@
 # Build stage
 FROM node:20-alpine AS builder
 
+# Define build arguments
+ARG BUILD_VERSION
+ARG BUILD_DATE
+ARG LANDING_BASE_URL
+ARG API_BASE_URL
+ARG CLIENT_BASE_URL
+
+
+# Set build-time environment variables
+ENV BUILD_VERSION=$BUILD_VERSION
+ENV BUILD_DATE=$BUILD_DATE
+ENV LANDING_BASE_URL=$LANDING_BASE_URL
+ENV API_BASE_URL=$API_BASE_URL
+ENV NEXT_PUBLIC_API_URL=$API_BASE_URL
+ENV NEXT_PUBLIC_LANDING_URL=$LANDING_BASE_URL
+ENV NEXT_PUBLIC_CLIENT_URL=$CLIENT_BASE_URL
+
 # Set working directory
 WORKDIR /app
 
@@ -13,11 +30,32 @@ RUN yarn install --frozen-lockfile
 # Copy source code
 COPY . .
 
-# Build the application
+# Create .env file from build arguments
+RUN echo "NEXT_PUBLIC_API_URL=$API_BASE_URL" > .env && \
+    echo "NEXT_PUBLIC_LANDING_URL=$LANDING_BASE_URL" >> .env && \
+    echo "NEXT_PUBLIC_CLIENT_URL=$CLIENT_BASE_URL" >> .env && \
+    echo "BUILD_VERSION=$BUILD_VERSION" >> .env && \
+    echo "BUILD_DATE=$BUILD_DATE" >> .env
+
+# Build the application with environment variables
 RUN yarn build
 
 # Production stage
 FROM node:20-alpine AS runner
+
+# Define build arguments for production stage
+ARG BUILD_VERSION
+ARG BUILD_DATE
+ARG LANDING_BASE_URL
+ARG API_BASE_URL
+
+# Set runtime environment variables
+ENV BUILD_VERSION=$BUILD_VERSION
+ENV BUILD_DATE=$BUILD_DATE
+ENV LANDING_BASE_URL=$LANDING_BASE_URL
+ENV API_BASE_URL=$API_BASE_URL
+ENV NEXT_PUBLIC_API_URL=$API_BASE_URL
+ENV NEXT_PUBLIC_LANDING_URL=$LANDING_BASE_URL
 
 # Set working directory
 WORKDIR /app
