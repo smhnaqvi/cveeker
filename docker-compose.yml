@@ -27,17 +27,8 @@ services:
     image: ghcr.io/smhnaqvi/cveeker/cvilo-api:latest
     ports:
       - "8081:8081"
-    env_file:
-      - ./cvilo-api/.env
     environment:
       - GIN_MODE=release
-      - HOST=0.0.0.0
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=cvilo_password
-      - POSTGRES_DB=cvilo_db
-      - POSTGRES_SSLMODE=disable
     volumes:
       - /app/tmp
     networks:
@@ -66,9 +57,6 @@ services:
     image: ghcr.io/smhnaqvi/cveeker/cvilo-landing-nextjs:latest
     ports:
       - "3001:3001"
-    environment:
-      - NEXT_PUBLIC_API_URL=https://api.cvilo.com/api
-      - NODE_ENV=production
     depends_on:
       - cvilo-api
     networks:
