@@ -73,9 +73,6 @@ services:
       target: runner
     ports:
       - "3009:3009"
-    environment:
-      - VITE_API_URL=https://api.cvilo.com/api
-      # - VITE_EXPORT_URL=https://api.cvilo.com/export  # Disabled export service
     volumes:
       - ./cvilo-clientarea:/app
       - /app/node_modules
