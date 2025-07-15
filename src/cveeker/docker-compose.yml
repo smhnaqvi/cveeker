@@ -137,22 +137,22 @@ services:
     restart: unless-stopped
 
   # Nginx Reverse Proxy
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - cvilo-api
-      # - cvilo-export  # Disabled export service
-      - cvilo-clientarea
-      # - cvilo-landing  # Disabled due to build issues
-      - cvilo-landing-nextjs
-    networks:
-      - cvilo-network
-    restart: unless-stopped
+  # nginx:
+  #   image: nginx:alpine
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro
+  #   depends_on:
+  #     - cvilo-api
+  #     # - cvilo-export  # Disabled export service
+  #     - cvilo-clientarea
+  #     # - cvilo-landing  # Disabled due to build issues
+  #     - cvilo-landing-nextjs
+  #   networks:
+  #     - cvilo-network
+  #   restart: unless-stopped
 
 networks:
   cvilo-network:
