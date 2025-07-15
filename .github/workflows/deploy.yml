@@ -1,12 +1,55 @@
-name: Deploy to VPS
+name: Build, Push and Deploy
 
 on:
   push:
     branches:
       - main
 
+permissions:
+  contents: read
+  packages: write  # This is required for pushing to GHCR
+
 jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push cvilo-api
+        run: |
+          IMAGE_NAME=ghcr.io/${{ github.repository }}/cvilo-api
+          IMAGE_NAME_LOWER=$(echo $IMAGE_NAME | tr '[A-Z]' '[a-z]')
+          docker build -t $IMAGE_NAME_LOWER:latest ./cvilo-api
+          docker push $IMAGE_NAME_LOWER:latest
+
+      - name: Build and push cvilo-clientarea
+        run: |
+          IMAGE_NAME=ghcr.io/${{ github.repository }}/cvilo-clientarea
+          IMAGE_NAME_LOWER=$(echo $IMAGE_NAME | tr '[A-Z]' '[a-z]')
+          docker build -t $IMAGE_NAME_LOWER:latest ./cvilo-clientarea
+          docker push $IMAGE_NAME_LOWER:latest
+
+      - name: Build and push cvilo-landing-nextjs
+        run: |
+          IMAGE_NAME=ghcr.io/${{ github.repository }}/cvilo-landing-nextjs
+          IMAGE_NAME_LOWER=$(echo $IMAGE_NAME | tr '[A-Z]' '[a-z]')
+          docker build -t $IMAGE_NAME_LOWER:latest ./cvilo-landing-nextjs
+          docker push $IMAGE_NAME_LOWER:latest
+
   deploy:
+    needs: build-and-push
     runs-on: ubuntu-latest
     
     steps:
