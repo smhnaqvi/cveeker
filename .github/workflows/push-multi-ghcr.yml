@@ -38,7 +38,7 @@ jobs:
         run: |
           IMAGE_NAME=ghcr.io/${{ github.repository }}/cvilo-clientarea
           IMAGE_NAME_LOWER=$(echo $IMAGE_NAME | tr '[A-Z]' '[a-z]')
-          docker build --target runner -t $IMAGE_NAME_LOWER:latest ./cvilo-clientarea
+          docker build -t $IMAGE_NAME_LOWER:latest ./cvilo-clientarea
           docker push $IMAGE_NAME_LOWER:latest
 
       - name: Build and push cvilo-landing-nextjs
