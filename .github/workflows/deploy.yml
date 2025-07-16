@@ -100,7 +100,9 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    
+    env:
+      PRESERVE_DB_VOLUMES: true
+      NON_INTERACTIVE: true 
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.0
@@ -108,9 +110,9 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: github-deployer
           key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
-          envs: PRESERVE_DB_VOLUMES
+          envs: PRESERVE_DB_VOLUMES, NON_INTERACTIVE
           script: |
             cd /opt/cveeker
             git pull
-            PRESERVE_DB_VOLUMES=true ./docker-cleanup.sh
+            ./docker-cleanup.sh
             ./start-cvilo.sh
