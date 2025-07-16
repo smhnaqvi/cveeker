@@ -113,11 +113,17 @@ show_disk_usage_after() {
 
 # Main cleanup function
 cleanup() {
-    echo "🛑 Stopping and removing all containers, networks, and volumes for this project..."
-    docker-compose down --volumes --remove-orphans
+    echo "🛑 Stopping and removing all containers and networks for this project..."
+    if [ "$PRESERVE_DB_VOLUMES" = true ]; then
+        echo "   - Preserving volumes during docker-compose down"
+        docker-compose down --remove-orphans
+    else
+        echo "   - Removing volumes during docker-compose down"
+        docker-compose down --volumes --remove-orphans
+    fi
     
     if [ $? -eq 0 ]; then
-        echo "✅ Project containers, networks, and volumes removed successfully."
+        echo "✅ Project containers and networks removed successfully."
     else
         echo "⚠️  Some containers may not have been removed (this is normal if they weren't running)."
     fi
@@ -142,9 +148,8 @@ cleanup() {
     if [ "$PRESERVE_DB_VOLUMES" = true ]; then
         echo "🗄️  Preserving database volumes..."
         echo "   - Database data will be kept safe"
-        echo "   - Only removing unused volumes (not database volumes)"
-        docker volume prune -f
-        echo "✅ Unused volumes removed (database volumes preserved)."
+        echo "   - Skipping volume cleanup to protect database data"
+        echo "✅ Database volumes preserved (no volume cleanup performed)."
     else
         echo "🗑️  Removing ALL volumes (including database data)..."
         echo "   ⚠️  WARNING: This will delete ALL user data!"
@@ -161,6 +166,7 @@ cleanup() {
     echo "🗑️  Final system prune to clean up everything..."
     if [ "$PRESERVE_DB_VOLUMES" = true ]; then
         echo "   - Preserving database volumes during final cleanup"
+        echo "   - Only removing containers, images, networks, and build cache"
         docker system prune -af
     else
         echo "   - Removing all volumes including database data"
@@ -183,7 +189,7 @@ show_cleanup_summary() {
     echo "   ✅ ALL Docker images removed"
     echo "   ✅ ALL Docker networks removed"
     if [ "$PRESERVE_DB_VOLUMES" = true ]; then
-        echo "   ✅ Unused volumes removed (database volumes preserved)"
+        echo "   ✅ Database volumes preserved (no volume cleanup)"
     else
         echo "   ✅ ALL Docker volumes removed (database data cleared)"
     fi
