@@ -1,4 +1,4 @@
-name: Build, Push and Deploy
+name: Build and Deploy
 
 on:
   push:
@@ -18,7 +18,7 @@ env:
   LANDING_BASE_URL: ${{ secrets.LANDING_BASE_URL }}
 
 jobs:
-  build-and-push:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -35,7 +35,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push cvilo-api
+      - name: Build cvilo-api
         run: |
           IMAGE_NAME=ghcr.io/${{ github.repository }}/cvilo-api
           IMAGE_NAME_LOWER=$(echo $IMAGE_NAME | tr '[A-Z]' '[a-z]')
@@ -67,7 +67,7 @@ jobs:
           docker push $IMAGE_NAME_LOWER:latest
           docker push $IMAGE_NAME_LOWER:$BUILD_VERSION
 
-      - name: Build and push cvilo-clientarea
+      - name: Build cvilo-clientarea
         run: |
           IMAGE_NAME=ghcr.io/${{ github.repository }}/cvilo-clientarea
           IMAGE_NAME_LOWER=$(echo $IMAGE_NAME | tr '[A-Z]' '[a-z]')
@@ -81,7 +81,7 @@ jobs:
           docker push $IMAGE_NAME_LOWER:latest
           docker push $IMAGE_NAME_LOWER:$BUILD_VERSION
 
-      - name: Build and push cvilo-landing-nextjs
+      - name: Build cvilo-landing-nextjs
         run: |
           IMAGE_NAME=ghcr.io/${{ github.repository }}/cvilo-landing-nextjs
           IMAGE_NAME_LOWER=$(echo $IMAGE_NAME | tr '[A-Z]' '[a-z]')
@@ -98,7 +98,7 @@ jobs:
           docker push $IMAGE_NAME_LOWER:$BUILD_VERSION
 
   deploy:
-    needs: build-and-push
+    needs: build
     runs-on: ubuntu-latest
     
     steps:
@@ -108,7 +108,9 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: github-deployer
           key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          envs: PRESERVE_DB_VOLUMES
           script: |
             cd /opt/cveeker
-            docker compose pull
-            docker compose up -d 
+            git pull
+            PRESERVE_DB_VOLUMES=true ./docker-cleanup.sh
+            ./start-cvilo.sh
