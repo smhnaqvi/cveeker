@@ -14,27 +14,40 @@ if ! command -v docker-compose &> /dev/null; then
     exit 1
 fi
 
-echo "📦 Building and starting all services..."
-docker-compose up --build -d
+# Use REPO_NAME from environment variable (passed from GitHub Actions)
+# Fallback to git config if not set (for local development)
+if [ -z "$REPO_NAME" ]; then
+    REPO_NAME="ghcr.io/$(git config --get remote.origin.url | sed 's/.*github\.com[:/]\([^/]*\/[^/]*\).*/\1/')"
+fi
+
+echo "📦 Pulling latest images from GitHub Container Registry..."
+echo "   Repository: $REPO_NAME"
+echo "   Commit: latest"
+
+# Pull the latest images
+docker pull $REPO_NAME/cvilo-api:latest
+docker pull $REPO_NAME/cvilo-clientarea:latest
+docker pull $REPO_NAME/cvilo-landing-nextjs:latest
+
+echo "🚀 Starting services with pulled images..."
+docker-compose up -d
 
 echo "⏳ Waiting for services to be ready..."
 sleep 10
 
+echo "🔍 Checking if services are running..."
+docker-compose ps
+
 echo "✅ Cvilo stack is starting up!"
 echo ""
 echo "🌐 Services:"
-echo "  - API: http://localhost:8081"
-echo "  - Client Dashboard: http://localhost:3009"
-echo "  - Landing Page: http://localhost:3001"
-echo "  - Main Site: http://localhost (via nginx)"
+echo "  - API: http://api.cvilo.com"
+echo "  - Client Dashboard: http://app.cvilo.com"
+echo "  - Landing Page: http://cvilo.com"
 echo "  - PostgreSQL: localhost:5432"
 echo "  - pgAdmin: http://localhost:5050 (admin@cvilo.com / admin123)"
 echo ""
-echo "📊 Check service status:"
-echo "  docker-compose ps"
-echo ""
-echo "📋 View logs:"
-echo "  docker-compose logs -f"
-echo ""
 echo "🛑 Stop services:"
 echo "  docker-compose down" 
+
+echo "✅ Cvilo stack is starting up!"

@@ -65,7 +65,6 @@ jobs:
             -t $IMAGE_NAME_LOWER:$BUILD_VERSION \
             ./cvilo-api
           docker push $IMAGE_NAME_LOWER:latest
-          docker push $IMAGE_NAME_LOWER:$BUILD_VERSION
 
       - name: Build cvilo-clientarea
         run: |
@@ -79,7 +78,6 @@ jobs:
             -t $IMAGE_NAME_LOWER:$BUILD_VERSION \
             ./cvilo-clientarea
           docker push $IMAGE_NAME_LOWER:latest
-          docker push $IMAGE_NAME_LOWER:$BUILD_VERSION
 
       - name: Build cvilo-landing-nextjs
         run: |
@@ -95,14 +93,14 @@ jobs:
             -t $IMAGE_NAME_LOWER:$BUILD_VERSION \
             ./cvilo-landing-nextjs
           docker push $IMAGE_NAME_LOWER:latest
-          docker push $IMAGE_NAME_LOWER:$BUILD_VERSION
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
     env:
       PRESERVE_DB_VOLUMES: true
-      NON_INTERACTIVE: true 
+      NON_INTERACTIVE: true
+      REPO_NAME: ghcr.io/${{ github.repository }}
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.0
@@ -110,7 +108,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: github-deployer
           key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
-          envs: PRESERVE_DB_VOLUMES, NON_INTERACTIVE
+          envs: PRESERVE_DB_VOLUMES, NON_INTERACTIVE, REPO_NAME
           script: |
             cd /opt/cveeker
             git pull
