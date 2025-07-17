@@ -56,6 +56,14 @@ func main() {
 	// Initialize router
 	router := gin.Default()
 
+	// Set production mode
+	if os.Getenv("GIN_MODE") == "release" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
+	// Add security middleware
+	router.Use(middleware.SecurityHeaders())
+
 	// Add CORS middleware
 	router.Use(func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")

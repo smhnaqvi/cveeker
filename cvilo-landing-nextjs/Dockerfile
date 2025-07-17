@@ -1,13 +1,12 @@
-# Build stage
+# Multi-stage build for optimized production image
 FROM node:20-alpine AS builder
 
-# Define build arguments
+# Define build arguments (only non-sensitive data)
 ARG BUILD_VERSION
 ARG BUILD_DATE
 ARG LANDING_BASE_URL
 ARG API_BASE_URL
 ARG CLIENT_BASE_URL
-
 
 # Set build-time environment variables
 ENV BUILD_VERSION=$BUILD_VERSION
@@ -20,6 +19,9 @@ ENV NEXT_PUBLIC_CLIENT_URL=$CLIENT_BASE_URL
 
 # Set working directory
 WORKDIR /app
+
+# Install system dependencies
+RUN apk add --no-cache libc6-compat
 
 # Copy package files
 COPY package.json yarn.lock ./
@@ -41,21 +43,10 @@ RUN echo "NEXT_PUBLIC_API_URL=$API_BASE_URL" > .env && \
 RUN yarn build
 
 # Production stage
-FROM node:20-alpine AS runner
+FROM node:20-alpine
 
-# Define build arguments for production stage
-ARG BUILD_VERSION
-ARG BUILD_DATE
-ARG LANDING_BASE_URL
-ARG API_BASE_URL
-
-# Set runtime environment variables
-ENV BUILD_VERSION=$BUILD_VERSION
-ENV BUILD_DATE=$BUILD_DATE
-ENV LANDING_BASE_URL=$LANDING_BASE_URL
-ENV API_BASE_URL=$API_BASE_URL
-ENV NEXT_PUBLIC_API_URL=$API_BASE_URL
-ENV NEXT_PUBLIC_LANDING_URL=$LANDING_BASE_URL
+# Install wget for health checks
+RUN apk add --no-cache wget
 
 # Set working directory
 WORKDIR /app
@@ -64,17 +55,16 @@ WORKDIR /app
 RUN addgroup -g 1001 -S appgroup && \
     adduser -u 1001 -S appuser -G appgroup
 
-# Copy package files
-COPY package.json yarn.lock ./
+# Copy built application from builder stage
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/yarn.lock ./yarn.lock
 
 # Install only production dependencies
 RUN yarn install --frozen-lockfile --production
 
-# Copy built application
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-
-# Change ownership
+# Set proper ownership
 RUN chown -R appuser:appgroup /app
 
 # Switch to non-root user

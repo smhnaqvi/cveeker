@@ -30,12 +30,23 @@ docker pull $REPO_NAME/cvilo-clientarea:latest
 docker pull $REPO_NAME/cvilo-landing-nextjs:latest
 
 echo "🚀 Starting services with pulled images..."
-docker-compose up -d
+
+# Check if .env.production exists
+if [ ! -f ".env.production" ]; then
+    echo "❌ .env.production file not found!"
+    echo "   Please create .env.production file with your production environment variables."
+    echo "   You can use env.production.example as a template."
+    exit 1
+fi
+
+echo "📋 Using .env.production for environment variables..."
+docker-compose --env-file .env.production up -d
 
 echo "⏳ Waiting for services to be ready..."
-sleep 10
+echo "   Waiting for PostgreSQL to be healthy..."
+sleep 15
 
-echo "🔍 Checking if services are running..."
+echo "🔍 Checking service status..."
 docker-compose ps
 
 echo "✅ Cvilo stack is starting up!"
