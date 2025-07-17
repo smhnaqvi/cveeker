@@ -3,10 +3,8 @@ services:
     image: postgres:15
     container_name: cvilo_postgres
     restart: unless-stopped
-    environment:
-      POSTGRES_DB:       ${POSTGRES_DB:?error}
-      POSTGRES_USER:     ${POSTGRES_USER:?error}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?error}
+    env_file:
+      - .env.production
     ports:
       - "5432:5432"
     volumes:
@@ -43,8 +41,6 @@ services:
     networks: [cvilo-network]
     ports:
       - "3009:3009"
-    environment:
-      VITE_API_URL: ${API_BASE_URL:?error}
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://0.0.0.0:3009/health"]
       interval: 30s
