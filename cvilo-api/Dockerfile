@@ -4,12 +4,10 @@ FROM golang:1.23-alpine AS builder
 # Define build arguments (only non-sensitive data)
 ARG BUILD_VERSION
 ARG BUILD_DATE
-ARG API_BASE_URL
 
 # Set build-time environment variables
 ENV BUILD_VERSION=$BUILD_VERSION
 ENV BUILD_DATE=$BUILD_DATE
-ENV API_BASE_URL=$API_BASE_URL
 
 # Install build dependencies
 RUN apk add --no-cache \

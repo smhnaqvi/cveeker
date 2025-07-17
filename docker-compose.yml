@@ -1,110 +1,71 @@
 services:
-  # PostgreSQL Database
   postgres:
     image: postgres:15
     container_name: cvilo_postgres
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: cvilo_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: cvilo_password
+      POSTGRES_DB:       ${POSTGRES_DB:?error}
+      POSTGRES_USER:     ${POSTGRES_USER:?error}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?error}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - cvilo-network
-    restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks: [cvilo-network]
 
-  # Go API Service
   cvilo-api:
     image: ghcr.io/smhnaqvi/cveeker/cvilo-api:latest
-    ports:
-      - "8081:8081"
-    environment:
-      - GIN_MODE=release
-      - AI_MODEL=${AI_MODEL}
-      - AI_TOKEN=${AI_TOKEN}
-      - AI_URL=${AI_URL}
-      - CORS_ORIGIN=${CORS_ORIGIN}
-      - HOST=${HOST}
-      - JWT_SECRET=${JWT_SECRET}
-      - LINKEDIN_CLIENT_ID=${LINKEDIN_CLIENT_ID}
-      - LINKEDIN_CLIENT_SECRET=${LINKEDIN_CLIENT_SECRET}
-      - LINKEDIN_REDIRECT_URL=${LINKEDIN_REDIRECT_URL}
-      - MODELS_BASE_URL=${MODELS_BASE_URL}
-      - PORT=${PORT:-8081}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_HOST=${POSTGRES_HOST}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_PORT=${POSTGRES_PORT}
-      - POSTGRES_SSLMODE=${POSTGRES_SSLMODE}
-      - USE_GITHUB_MODELS=${USE_GITHUB_MODELS}
-    volumes:
-      - /app/tmp
-    networks:
-      - cvilo-network
+    container_name: cvilo-api
+    restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
-    restart: unless-stopped
+    env_file:
+      - .env.production
+    networks: [cvilo-network]
+    ports:
+      - "8081:8081"
+    volumes:
+      - /app/tmp
 
-  # React Client Dashboard
   cvilo-clientarea:
     image: ghcr.io/smhnaqvi/cveeker/cvilo-clientarea:latest
+    container_name: cvilo-clientarea
+    restart: unless-stopped
+    depends_on: [cvilo-api]
+    env_file:
+      - .env.production
+    networks: [cvilo-network]
     ports:
       - "3009:3009"
     environment:
-      - VITE_API_URL=${API_BASE_URL:-http://localhost:8081}
-    depends_on:
-      - cvilo-api
-    networks:
-      - cvilo-network
-    restart: unless-stopped
+      VITE_API_URL: ${API_BASE_URL:?error}
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3009/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://0.0.0.0:3009/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
 
-  # Next.js Landing Page
   cvilo-landing-nextjs:
     image: ghcr.io/smhnaqvi/cveeker/cvilo-landing-nextjs:latest
+    container_name: cvilo-landing-nextjs
+    restart: unless-stopped
+    depends_on: [cvilo-api]
+    env_file:
+      - .env.production
+    networks: [cvilo-network]
     ports:
       - "3001:3001"
-    depends_on:
-      - cvilo-api
-    networks:
-      - cvilo-network
-    restart: unless-stopped
-
-  # Optional: pgAdmin for database management
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: cvilo_pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@cvilo.com
-      PGADMIN_DEFAULT_PASSWORD: admin123
-    ports:
-      - "5050:80"
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    depends_on:
-      - postgres
-    networks:
-      - cvilo-network
-    restart: unless-stopped
 
 networks:
   cvilo-network:
     driver: bridge
 
 volumes:
-  app-data:
   postgres_data:
-  pgadmin_data: 
