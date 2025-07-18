@@ -25,6 +25,10 @@ RUN yarn build
 FROM node:20-alpine AS runner
 WORKDIR /app
 
+# Set environment variables for the runtime
+ENV NODE_ENV production
+ENV PORT=3001
+
 # Copy the standalone build from the builder stage
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
