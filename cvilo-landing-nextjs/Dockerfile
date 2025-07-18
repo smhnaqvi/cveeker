@@ -30,9 +30,9 @@ ENV NODE_ENV production
 ENV PORT=3001
 
 # Copy the standalone build from the builder stage
+COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/public ./public
 
 # Expose the port Next.js runs on
 EXPOSE 3001
