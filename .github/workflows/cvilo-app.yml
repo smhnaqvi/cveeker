@@ -61,6 +61,5 @@ jobs:
             set -e
             cd /opt/cveeker
             git pull
-            ./docker-cleanup.sh
             docker compose pull cvilo-clientarea
             docker compose up -d cvilo-clientarea

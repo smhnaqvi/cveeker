@@ -27,6 +27,13 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
 # Stage 2: Run minimal image
 FROM alpine:latest
 
+# Install runtime dependencies
+RUN apk --no-cache add \
+    ca-certificates \
+    tzdata \
+    postgresql-client \
+    curl
+
 # Add non-root user for security
 RUN adduser -D appuser
 USER appuser

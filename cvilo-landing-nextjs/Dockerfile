@@ -28,7 +28,7 @@ COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
 # Expose the port Next.js runs on
-EXPOSE 3000
+EXPOSE 3001
 
 # Start the Next.js application
 CMD ["node", "server.js"]

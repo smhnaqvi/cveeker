@@ -65,6 +65,5 @@ jobs:
             set -e
             cd /opt/cveeker
             git pull
-            ./docker-cleanup.sh
             docker compose pull cvilo-landing-nextjs
             docker compose up -d cvilo-landing-nextjs
