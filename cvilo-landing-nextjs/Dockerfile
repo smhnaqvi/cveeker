@@ -15,7 +15,10 @@ COPY . .
 
 # Build the Next.js application
 FROM base AS builder
+
 ENV NODE_ENV production
+ENV PORT=3001
+
 RUN yarn build
 
 # Final production image
