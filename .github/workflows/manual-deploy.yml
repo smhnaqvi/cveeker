@@ -1,0 +1,230 @@
+name: Manual Deploy Applications
+
+on:
+  schedule:
+    - cron: "0 0 * * *"  # run every day at midnight, utc
+  workflow_dispatch:
+    inputs:
+      application:
+        description: 'Application to deploy'
+        required: true
+        type: choice
+        options:
+          - cvilo-api
+          - cvilo-clientarea
+          - cvilo-landing-nextjs
+          - all
+      branch:
+        description: 'Branch to deploy from'
+        required: true
+        type: string
+        default: 'main'
+      force_rebuild:
+        description: 'Force rebuild even if no changes'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+jobs:
+  delete-package-versions:
+    name: Delete untagged package versions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: snok/container-retention-policy@v3.0.0
+        with:
+          account: ${{ github.actor }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          image-names: "*"  # all packages owned by the account
+          tag-selection: untagged
+          cut-off: 1h
+
+  # Job to build and push Docker images
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [cvilo-api, cvilo-clientarea, cvilo-landing-nextjs]
+        include:
+          - app: cvilo-api
+            dockerfile: cvilo-api/Dockerfile
+            context: cvilo-api
+            port: 8081
+          - app: cvilo-clientarea
+            dockerfile: cvilo-clientarea/Dockerfile
+            context: cvilo-clientarea
+            port: 3009
+          - app: cvilo-landing-nextjs
+            dockerfile: cvilo-landing-nextjs/Dockerfile
+            context: cvilo-landing-nextjs
+            port: 3001
+    steps:
+      - name: Check if should build this app
+        run: |
+          if [ "${{ github.event.inputs.application }}" != "all" ] && [ "${{ github.event.inputs.application }}" != "${{ matrix.app }}" ]; then
+            echo "Skipping build for ${{ matrix.app }}"
+            exit 0
+          fi
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.app }}
+          tags: |
+            type=raw,value=${{ github.event.inputs.branch }}
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            BUILD_VERSION=${{ github.sha }}
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            VITE_API_URL=${{ secrets.VITE_API_URL }}
+            LANDING_BASE_URL=${{ secrets.LANDING_BASE_URL }}
+            API_BASE_URL=${{ secrets.API_BASE_URL }}
+            CLIENT_BASE_URL=${{ secrets.CLIENT_BASE_URL }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Job to deploy to production server (main branch)
+  deploy-production:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event.inputs.branch == 'main'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: Deploy to production server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USERNAME }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          port: ${{ secrets.PROD_PORT }}
+          script: |
+            # Navigate to project directory
+            cd /opt/cveeker
+            
+            # Pull latest images for the specific branch
+            docker-compose pull
+            
+            # Update docker-compose.yml if needed
+            git pull origin ${{ github.event.inputs.branch }}
+            
+            # Update docker-compose.yml to use branch-specific images
+            sed -i.bak "s|ghcr.io/smhnaqvi/cveeker/cvilo-api:.*|ghcr.io/smhnaqvi/cveeker/cvilo-api:${{ github.event.inputs.branch }}|g" docker-compose.yml
+            sed -i.bak "s|ghcr.io/smhnaqvi/cveeker/cvilo-clientarea:.*|ghcr.io/smhnaqvi/cveeker/cvilo-clientarea:${{ github.event.inputs.branch }}|g" docker-compose.yml
+            sed -i.bak "s|ghcr.io/smhnaqvi/cveeker/cvilo-landing-nextjs:.*|ghcr.io/smhnaqvi/cveeker/cvilo-landing-nextjs:${{ github.event.inputs.branch }}|g" docker-compose.yml
+            rm -f docker-compose.yml.bak
+            
+            # Restart services based on what was deployed
+            if [ "${{ github.event.inputs.application }}" = "all" ]; then
+              docker-compose down
+              docker-compose up -d
+            elif [ "${{ github.event.inputs.application }}" = "cvilo-api" ]; then
+              docker-compose restart cvilo-api
+            elif [ "${{ github.event.inputs.application }}" = "cvilo-clientarea" ]; then
+              docker-compose restart cvilo-clientarea
+            elif [ "${{ github.event.inputs.application }}" = "cvilo-landing-nextjs" ]; then
+              docker-compose restart cvilo-landing-nextjs
+            fi
+            
+            # Wait for services to be healthy
+            sleep 30
+            
+            # Check service health
+            docker-compose ps
+
+  # Job to deploy to staging server (any branch except main)
+  deploy-staging:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event.inputs.branch != 'main'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: Deploy to staging server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USERNAME }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          port: ${{ secrets.STAGING_PORT }}
+          script: |
+            # Navigate to project directory
+            cd /opt/cveeker-staging
+            
+            # Pull latest images for the specific branch
+            docker-compose pull
+            
+            # Update docker-compose.yml if needed
+            git pull origin ${{ github.event.inputs.branch }}
+            
+            # Update docker-compose.yml to use branch-specific images
+            sed -i.bak "s|ghcr.io/smhnaqvi/cveeker/cvilo-api:.*|ghcr.io/smhnaqvi/cveeker/cvilo-api:${{ github.event.inputs.branch }}|g" docker-compose.yml
+            sed -i.bak "s|ghcr.io/smhnaqvi/cveeker/cvilo-clientarea:.*|ghcr.io/smhnaqvi/cveeker/cvilo-clientarea:${{ github.event.inputs.branch }}|g" docker-compose.yml
+            sed -i.bak "s|ghcr.io/smhnaqvi/cveeker/cvilo-landing-nextjs:.*|ghcr.io/smhnaqvi/cveeker/cvilo-landing-nextjs:${{ github.event.inputs.branch }}|g" docker-compose.yml
+            rm -f docker-compose.yml.bak
+            
+            # Restart services based on what was deployed
+            if [ "${{ github.event.inputs.application }}" = "all" ]; then
+              docker-compose down
+              docker-compose up -d
+            elif [ "${{ github.event.inputs.application }}" = "cvilo-api" ]; then
+              docker-compose restart cvilo-api
+            elif [ "${{ github.event.inputs.application }}" = "cvilo-clientarea" ]; then
+              docker-compose restart cvilo-clientarea
+            elif [ "${{ github.event.inputs.application }}" = "cvilo-landing-nextjs" ]; then
+              docker-compose restart cvilo-landing-nextjs
+            fi
+            
+            # Wait for services to be healthy
+            sleep 30
+            
+            # Check service health
+            docker-compose ps
+
+  # Job to notify deployment status
+  notify:
+    needs: [deploy-production, deploy-staging]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Notify deployment status
+        run: |
+          if [ "${{ needs.deploy-production.result }}" = "success" ] || [ "${{ needs.deploy-staging.result }}" = "success" ]; then
+            echo "✅ Deployment successful for ${{ github.event.inputs.application }} from branch ${{ github.event.inputs.branch }}"
+          else
+            echo "❌ Deployment failed for ${{ github.event.inputs.application }} from branch ${{ github.event.inputs.branch }}"
+            exit 1
+          fi 
