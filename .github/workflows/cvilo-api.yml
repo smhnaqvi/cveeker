@@ -29,6 +29,30 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Create .env.production file
+        run: |
+          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB}}" >> .env.production
+          echo "POSTGRES_HOST=${{ secrets.POSTGRES_HOST}}" >> .env.production
+          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD}}" >> .env.production
+          echo "POSTGRES_PORT=${{ secrets.POSTGRES_PORT}}" >> .env.production
+          echo "POSTGRES_SSLMODE=${{ secrets.POSTGRES_SSLMODE}}" >> .env.production
+          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER}}" >> .env.production
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET}}" >> .env.production
+          echo "PORT=${{ secrets.PORT}}" >> .env.production
+          echo "HOST=${{ secrets.HOST}}" >> .env.production
+          echo "GIN_MODE=release" >> .env.production
+          echo "CORS_ORIGIN=${{ secrets.CORS_ORIGIN}}" >> .env.production
+          echo "API_BASE_URL=${{ secrets.API_BASE_URL }}" >> .env.production
+          echo "LANDING_BASE_URL=${{ secrets.LANDING_BASE_URL}}" >> .env.production
+          echo "LINKEDIN_CLIENT_ID=${{ secrets.LINKEDIN_CLIENT_ID}}" >> .env.production
+          echo "LINKEDIN_CLIENT_SECRET=${{ secrets.LINKEDIN_CLIENT_SECRET}}" >> .env.production
+          echo "LINKEDIN_REDIRECT_URL=${{ secrets.LINKEDIN_REDIRECT_URL}}" >> .env.production
+          echo "AI_MODEL=${{ secrets.AI_MODEL }}" >> .env.production
+          echo "AI_TOKEN=${{ secrets.AI_TOKEN }}" >> .env.production
+          echo "AI_URL=${{ secrets.AI_URL }}" >> .env.production
+          echo "USE_GITHUB_MODELS=${{ secrets.USE_GITHUB_MODELS}}" >> .env.production
+          echo "MODELS_BASE_URL=${{ secrets.MODELS_BASE_URL}}" >> .env.production
+
       - name: Build & push
         env:
           IMAGE_NAME: ghcr.io/${{ github.repository }}/cvilo-api

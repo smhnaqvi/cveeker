@@ -23,13 +23,22 @@ var (
 
 func main() {
 	env := os.Getenv("GIN_MODE")
+
+	// Load environment variables
 	if env == "release" {
+		// In production, try to load .env.production file, but don't fail if it's not found
+		// Docker Compose will set environment variables via env_file
 		if err := godotenv.Load(".env.production"); err != nil {
-			log.Println("No .env.production file found, using system environment variables")
+			log.Printf("No .env.production file found, using environment variables from Docker Compose")
+		} else {
+			log.Println("Loaded .env.production successfully")
 		}
 	} else {
+		// In development, try to load .env.dev file
 		if err := godotenv.Load(".env.dev"); err != nil {
-			log.Println("No .env.dev file found, using system environment variables")
+			log.Printf("No .env.dev file found, using system environment variables")
+		} else {
+			log.Println("Loaded .env.dev successfully")
 		}
 	}
 
