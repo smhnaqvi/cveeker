@@ -1,40 +1,45 @@
-# Stage 1: Build the Go binary
-FROM golang:1.23.0-alpine AS builder
+# Development Dockerfile for cvilo-api
+FROM golang:1.23.0-alpine
 
-# Enable Go modules and set working dir
+# Define build arguments (with development defaults)
+ARG BUILD_VERSION=dev
+ARG BUILD_DATE=2024-01-01T00:00:00Z
+ARG API_BASE_URL=http://localhost:8081
+
+# Install build dependencies
+RUN apk add --no-cache \
+    git \
+    ca-certificates \
+    tzdata \
+    gcc \
+    musl-dev \
+    pkgconfig \
+    postgresql-client \
+    curl
+
+# Set working directory
 WORKDIR /app
 
-# Install build tools
-RUN apk add --no-cache git
-
-# Copy go.mod and go.sum first (for caching dependencies)
+# Copy go mod files first for better caching
 COPY go.mod go.sum ./
+
+# Download dependencies
 RUN go mod download
 
-# Copy the rest of the source code
+# Copy source code
 COPY . .
 
-# Build the binary statically
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o app
+# Build the application for development with build-time variables
+RUN CGO_ENABLED=1 GOOS=linux go build \
+    -ldflags="-X main.BuildVersion=${BUILD_VERSION} -X main.BuildDate=${BUILD_DATE} -X main.APIBaseURL=${API_BASE_URL}" \
+    -o cvilo-api .
 
-# Stage 2: Run minimal image
-FROM alpine:latest
-
-# Add non-root user for security
-RUN adduser -D appuser
-USER appuser
-
-WORKDIR /home/appuser
-
-# Copy the compiled binary from builder
-COPY --from=builder /app/app .
-
-# Expose the app port
+# Expose port
 EXPOSE 8081
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8081/ping || exit 1
 
-# Command to run the app
-CMD ["./app"]
+# Run the application
+CMD ["./cvilo-api"]

@@ -14,10 +14,23 @@ import (
 	"github.com/smhnaqvi/cvilo/utils"
 )
 
+// Build-time variables (injected via ldflags)
+var (
+	BuildVersion string
+	BuildDate    string
+	APIBaseURL   string
+)
+
 func main() {
-	// Load environment variables from .env file
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found, using system environment variables")
+	env := os.Getenv("GIN_MODE")
+	if env == "release" {
+		if err := godotenv.Load(".env.production"); err != nil {
+			log.Println("No .env.production file found, using system environment variables")
+		}
+	} else {
+		if err := godotenv.Load(".env.dev"); err != nil {
+			log.Println("No .env.dev file found, using system environment variables")
+		}
 	}
 
 	// Initialize database connection
@@ -80,10 +93,38 @@ func main() {
 
 	// Health check endpoint
 	router.GET("/ping", func(c *gin.Context) {
+		// Get build info from environment or build-time variables
+		buildVersion := os.Getenv("BUILD_VERSION")
+		if buildVersion == "" {
+			buildVersion = BuildVersion
+		}
+		if buildVersion == "" {
+			buildVersion = "dev"
+		}
+
+		buildDate := os.Getenv("BUILD_DATE")
+		if buildDate == "" {
+			buildDate = BuildDate
+		}
+		if buildDate == "" {
+			buildDate = "unknown"
+		}
+
+		apiBaseURL := os.Getenv("API_BASE_URL")
+		if apiBaseURL == "" {
+			apiBaseURL = APIBaseURL
+		}
+		if apiBaseURL == "" {
+			apiBaseURL = "http://localhost:8081"
+		}
+
 		c.JSON(http.StatusOK, gin.H{
-			"message":  "Cvilo API is running!",
-			"version":  "2.0.0",
-			"database": "Connected",
+			"message":      "Cvilo API is running!",
+			"version":      buildVersion,
+			"build_date":   buildDate,
+			"api_base_url": apiBaseURL,
+			"database":     "Connected",
+			"environment":  os.Getenv("GIN_MODE"),
 		})
 	})
 
